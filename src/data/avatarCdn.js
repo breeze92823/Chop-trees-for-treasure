@@ -43,6 +43,36 @@ export function skinUrl(id) {
   return `${AVATAR_CDN}/skins/${id}.png`
 }
 
+// --- Catalogue ---------------------------------------------------------
+// The portal's own renderer resolves each item through the public catalogue
+// (`assetPaths` per item) rather than a URL pattern, so an item stored
+// somewhere unexpected still loads. Cached by id; a failed lookup resolves to
+// null so callers fall back to the pattern URLs above.
+const AVATAR_API = 'https://api.bloxity.io'
+const catalogue = new Map()
+
+export function describeItem(id) {
+  if (!isEquipped(id)) return Promise.resolve(null)
+  const key = String(id)
+  let request = catalogue.get(key)
+  if (!request) {
+    request = fetch(`${AVATAR_API}/v1/avatar/items/${encodeURIComponent(key)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .catch(() => null)
+    catalogue.set(key, request)
+  }
+  return request
+}
+
+// `assetPaths` entries are host-relative ('/avatars/...') or absolute.
+export function assetUrl(path) {
+  if (!path) return null
+  return path.startsWith('http') ? path : `https://static.bloxity.io${path}`
+}
+
 export function hatObjUrl(id) {
   return isEquipped(id) ? `${AVATAR_CDN}/items/hats/${id}.obj` : null
 }
