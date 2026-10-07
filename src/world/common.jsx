@@ -41,8 +41,10 @@ const _e = new Euler()
 const _p = new Vector3()
 const _s = new Vector3()
 const _c = new Color()
-export function Instances({ geometry, material, items, castShadow = true, receiveShadow = true }) {
-  const ref = useRef()
+// `meshRef` (optional) exposes the InstancedMesh, e.g. to hide single instances.
+export function Instances({ geometry, material, items, castShadow = true, receiveShadow = true, meshRef }) {
+  const own = useRef()
+  const ref = meshRef ?? own
   useLayoutEffect(() => {
     const mesh = ref.current
     items.forEach((it, i) => {

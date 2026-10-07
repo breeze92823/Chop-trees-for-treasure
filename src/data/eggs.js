@@ -40,7 +40,7 @@ export const PETS_BY_ID = Object.fromEntries(
 // platform purchases are wired up.
 // With no way to buy Robux yet, a new save starts with enough to try the
 // Ultimate Egg and the boosts; wood comes from chopping.
-export const STARTING_BALANCE = { wood: 0, robux: 200 }
+export const STARTING_BALANCE = { wood: 0, robux: 200, strength: 10 }
 
 export const CURRENCY_ICON = { wood: 'log', robux: 'robux' }
 

@@ -16,6 +16,9 @@ function fresh() {
     equipped: [],
     discovered: [],
     nextPetId: 1,
+    level: 1,
+    xp: 0, // strength gained toward the next level
+    xpNeeded: 10, // data/levels.js strengthForNextLevel(level)
     passes: { slots: false, wood2x: false },
     luckUntil: 0, // ms timestamp the Luck! boost runs out
   }

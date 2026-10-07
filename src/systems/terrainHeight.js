@@ -20,18 +20,43 @@ export function addBox({ x, z, w, d, h, y0 = GROUND_Y }) {
   return addCollider({ x0: x - w / 2, x1: x + w / 2, z0: z - d / 2, z1: z + d / 2, top: y0 + h })
 }
 
+// Floor height for the camera boom: like terrainHeightAt, but colliders flagged
+// `cameraPass` (trees) are ignored so the camera can go through them.
+export function cameraFloorAt(x, z, y = Infinity) {
+  let h = GROUND_Y
+  for (const c of colliders) {
+    if (c.cameraPass || c.top <= h || x < c.x0 || x > c.x1 || z < c.z0 || z > c.z1) continue
+    if (c.bottom !== undefined && y < c.bottom) continue
+    h = c.top
+  }
+  return h
+}
+
 // Floor height under (x, z). `y` (the querying body's height) lets a
 // collider be ignored when the body is below its underside, if it sets
 // `bottom` — e.g. a bridge you can walk under. Boxes without `bottom` are
 // solid from the ground up.
-export function terrainHeightAt(x, z, y = Infinity) {
+export function terrainHeightAt(x, z, y = Infinity, skip = null) {
+  let h = GROUND_Y
+  for (const c of colliders) {
+    if (c === skip || c.top <= h || x < c.x0 || x > c.x1 || z < c.z0 || z > c.z1) continue
+    if (c.bottom !== undefined && y < c.bottom) continue
+    h = c.top
+  }
+  return h
+}
+
+// The collider that sets the floor under (x, z), or null for bare ground.
+export function colliderAt(x, z, y = Infinity) {
+  let best = null
   let h = GROUND_Y
   for (const c of colliders) {
     if (c.top <= h || x < c.x0 || x > c.x1 || z < c.z0 || z > c.z1) continue
     if (c.bottom !== undefined && y < c.bottom) continue
     h = c.top
+    best = c
   }
-  return h
+  return best
 }
 
 export function isOutsideBounds(x, z) {

@@ -5,6 +5,24 @@
 export const POWER_GAIN_SOUND_URL = '/audio/power_gain.mp3'
 export const POWER_GAIN_GAIN = 0.135
 
+// Level-up jingle when the level rises; trimmed to LEVEL_UP_MAX_SECONDS,
+// peak-normalized, faded out, then scaled by LEVEL_UP_GAIN.
+export const LEVEL_UP_SOUND_URL = '/audio/level_up.mp3'
+export const LEVEL_UP_PEAK = 0.9
+export const LEVEL_UP_MAX_SECONDS = 2
+export const LEVEL_UP_FADE_OUT_S = 0.15
+export const LEVEL_UP_GAIN = 0.22
+
+// Axe-on-trunk thunk per landed swing (systems/chop.js). Leading silence is
+// trimmed, the clip is capped to CHOP_HIT_MAX_SECONDS, peak-normalized, faded
+// out, then scaled by CHOP_HIT_GAIN; each play varies pitch by +-CHOP_HIT_RATE_JITTER.
+export const CHOP_HIT_SOUND_URL = '/audio/chop_tree_1.mp3'
+export const CHOP_HIT_PEAK = 0.9
+export const CHOP_HIT_MAX_SECONDS = 0.7
+export const CHOP_HIT_FADE_OUT_S = 0.12
+export const CHOP_HIT_GAIN = 0.2
+export const CHOP_HIT_RATE_JITTER = 0.06
+
 // Failure buzz fired by showActionResult(text, false) (systems/actionResult.js).
 // Synthesized: two short descending square-wave notes, rendered once via
 // OfflineAudioContext and cached like a decoded file.

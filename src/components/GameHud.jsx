@@ -1,9 +1,15 @@
+import { useEffect, useState } from 'react'
+import { player } from '../systems/playerState.js'
+import { respawn } from '../systems/playerMovement.js'
+import { inForestCorridor } from '../world/forestTrees.js'
 import { RAINBOW, grad, T, Icon, stop, Btn, Emoji } from './hudParts.jsx'
 import EggMenu from './EggMenu.jsx'
 import HatchOverlay from './HatchOverlay.jsx'
 import PetsMenu from './PetsMenu.jsx'
 import IndexMenu from './IndexMenu.jsx'
+import { BookIcon, CashIcon, RebirthIcon } from './hudIcons.jsx'
 import ChopFx from './ChopFx.jsx'
+import LevelUpPopup from './LevelUpPopup.jsx'
 import Announcements from './Announcements.jsx'
 import { useGameStore } from '../store/useGameStore.js'
 import { usePlayerData } from '../store/usePlayerData.js'
@@ -20,14 +26,47 @@ import '../styles/gameHud.css'
 // (the screenshots are 1920x991) and scaled by --s in gameHud.css.
 
 // --- Top centre: level bar, strength packs, strength total ------------------------
+// True while the player is in the tree corridor (north of the first forest zone).
+function useInForest() {
+  const [inside, setInside] = useState(false)
+  useEffect(() => {
+    const check = () => {
+      const { x, z } = player.position
+      setInside(inForestCorridor(x, z))
+    }
+    check()
+    const id = setInterval(check, 150)
+    return () => clearInterval(id)
+  }, [])
+  return inside
+}
+
+function goHome() {
+  playButtonClick()
+  respawn()
+}
+
 function LevelBar() {
-  const xp = 31.94
-  const need = 80
+  const inForest = useInForest()
+  const strength = usePlayerData((s) => s.strength)
+  const level = usePlayerData((s) => s.level)
+  const xp = usePlayerData((s) => s.xp)
+  const need = usePlayerData((s) => s.xpNeeded)
+  // In the forest the level bar, packs and strength give way to a Home button.
+  if (inForest) {
+    return (
+      <div key="home" className="home-wrap" onPointerDown={stop}>
+        <Btn className="autochop home" style={{ '--bg': '#5ec8ff' }} onClick={goHome}>
+          <T size={64} w={8}>HOME</T>
+        </Btn>
+      </div>
+    )
+  }
   return (
-    <div className="hud-top" onPointerDown={stop}>
+    <div key="top" className="hud-top" onPointerDown={stop}>
       <div className="level">
         <div className="level-fill" style={{ width: `${(xp / need) * 100}%` }} />
-        <T size={44} w={5} className="level-l">LEVEL 3</T>
+        <T size={44} w={5} className="level-l">{`LEVEL ${level}`}</T>
         <T size={40} w={5} className="level-r">{`${xp}/${need}`}</T>
       </div>
       <div className="packs">
@@ -37,7 +76,7 @@ function LevelBar() {
       </div>
       <div className="strength">
         <Emoji size={50}>💪</Emoji>
-        <T size={34} w={4} fill={grad('#fff6dc', '#ffd77a')} stroke="#3a2406">116.94 Strength</T>
+        <T size={34} w={4} fill={grad('#fff6dc', '#ffd77a')} stroke="#3a2406">{`${formatNumber(strength)} Strength`}</T>
       </div>
     </div>
   )
@@ -102,8 +141,8 @@ function OpPet() {
 // --- Left side: auto chop + menu grid ---------------------------------------------
 const MENU = [
   { label: 'Shop', emoji: '🧺', bg: '#ffcf3a' },
-  { label: 'Rebirth', emoji: '☂️', bg: '#ff8a5a', badge: '0%' },
-  { label: 'Index', emoji: '📗', bg: '#a066f2', window: 'indexMenu' },
+  { label: 'Rebirth', icon: RebirthIcon, bg: '#ff8a5a', badge: '0%' },
+  { label: 'Index', icon: BookIcon, bg: '#a066f2', window: 'indexMenu' },
   { label: 'Invite', emoji: '🐥', bg: '#5fd14a' },
   { label: 'Pets', emoji: '🐾', bg: '#3a8ef0', window: 'petsMenu' },
   { label: 'Quests', emoji: '📜', bg: '#d9b48a' },
@@ -126,7 +165,7 @@ function LeftMenu() {
       <div className="menu">
         {MENU.map((m) => (
           <Btn key={m.label} className="tile" style={{ '--bg': m.bg }} onClick={m.window && (() => toggleWindow(m.window))}>
-            <Emoji size={58}>{m.emoji}</Emoji>
+            {m.icon ? <m.icon size={64} /> : <Emoji size={58}>{m.emoji}</Emoji>}
             <T size={24} w={4} className="tile-label">{m.label}</T>
             {m.badge && <T size={24} w={4} fill={grad('#fff3a0', '#ffc21a')} className="tile-badge">{m.badge}</T>}
           </Btn>
@@ -145,8 +184,8 @@ function Stats() {
     <div className="stats">
       <div className="stat"><Icon name="log" size={52} /><T size={36} w={4} fill={grad('#ffe0b0', '#e8a868')} stroke="#3a1a08">{formatNumber(wood)}</T></div>
       <div className="stat"><Emoji size={40}>🎒</Emoji><T size={36} w={4}>{`${equipped}/${slots}`}</T></div>
-      <div className="stat"><Icon name="rebirth" size={44} /><T size={36} w={4}>0</T></div>
-      <div className="stat cash"><Icon name="cash" size={84} /><T size={56} w={5} fill={grad('#c8ff9a', '#2fcf3a')} stroke="#0c3a10">$232</T></div>
+      <div className="stat"><RebirthIcon size={44} /><T size={36} w={4}>0</T></div>
+      <div className="stat cash"><CashIcon size={84} /><T size={56} w={5} fill={grad('#c8ff9a', '#2fcf3a')} stroke="#0c3a10">$232</T></div>
     </div>
   )
 }
@@ -165,6 +204,7 @@ export default function GameHud() {
       <PetsMenu />
       <IndexMenu />
       <ChopFx />
+      <LevelUpPopup />
       <Announcements />
       <HatchOverlay />
     </div>

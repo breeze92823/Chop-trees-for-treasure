@@ -1,4 +1,4 @@
-import { terrainHeightAt } from './terrainHeight.js'
+import { cameraFloorAt } from './terrainHeight.js'
 
 // Keeps the third-person camera boom out of the ground.
 const FLOOR_MARGIN = 0.3 // m the camera stays above the surface under it
@@ -14,7 +14,7 @@ export function safeDistance(target, dirX, dirY, dirZ, wanted) {
     const y = target.y + dirY * dist
     const x = target.x + dirX * dist
     const z = target.z + dirZ * dist
-    if (y < terrainHeightAt(x, z, y) + FLOOR_MARGIN) return Math.max(last, MIN_DISTANCE)
+    if (y < cameraFloorAt(x, z, y) + FLOOR_MARGIN) return Math.max(last, MIN_DISTANCE)
     last = dist
   }
   return wanted

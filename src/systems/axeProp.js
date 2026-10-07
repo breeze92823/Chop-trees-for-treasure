@@ -54,6 +54,7 @@ const _delta = new Quaternion()
 const _yaw = new Quaternion()
 const _lift = new Quaternion()
 const _tilt = new Quaternion().setFromAxisAngle(Z_AXIS, SWING_TILT)
+const _roll = new Quaternion()
 const _mountQ = new Quaternion()
 const _parentQ = new Quaternion()
 const _frame = new Quaternion() // arm's parent frame expressed in the Spine2 frame
@@ -138,7 +139,7 @@ function poseFreeArm(prop, rot, weight) {
 // Call after the walk cycle and poses have written the arm this frame.
 // `swingW` is the eased 0..1 weight of the 'swing' pose, `moveW` the eased
 // 0..1 locomotion weight.
-export function updateAxe(prop, swingW, moveW = 0, phase = 0) {
+export function updateAxe(prop, swingW, moveW = 0, phase = 0, side = 1) {
   if (!prop) return
   const { pivot, arm, mount } = prop
   const back = moveW * (1 - swingW)
@@ -186,7 +187,10 @@ export function updateAxe(prop, swingW, moveW = 0, phase = 0) {
   _dir.set(0, -1, 0).applyQuaternion(_rot)
   _hand.copy(_shoulder).addScaledVector(_dir, TUNE.reach * arm.scale.y)
   // Handle direction: straight out of the fist, or laid back over the shoulder.
-  _q.copy(_rot).multiply(_tilt)
+  // Side chop: roll the head a quarter turn about the handle so the edge
+  // leads the horizontal swing (sideways) instead of pointing up.
+  _roll.setFromAxisAngle(Y_AXIS, side * (Math.PI / 2) * swingW)
+  _q.copy(_rot).multiply(_tilt).multiply(_roll)
   pivot.position.copy(_hand)
   pivot.quaternion.copy(_q).slerp(REST_QUAT, idle)
 }

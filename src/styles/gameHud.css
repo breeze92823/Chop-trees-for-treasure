@@ -169,6 +169,11 @@
 .left { position: absolute; left: calc(13 * var(--s)); top: calc(218 * var(--s)); display: flex; flex-direction: column; align-items: center; width: calc(211 * var(--s)); }
 .auto-title { margin-bottom: calc(2 * var(--s)); }
 .autochop { width: 100%; height: calc(58 * var(--s)); }
+/* Pop-in when the top-centre block swaps (uses `scale` so translateX stays). */
+@keyframes top-pop { 0% { scale: 0.3; opacity: 0; } 60% { scale: 1.12; opacity: 1; } 80% { scale: 0.96; } 100% { scale: 1; } }
+.hud-top, .home-wrap { animation: top-pop 0.35s ease-out; transform-origin: 50% 50%; }
+.home-wrap { position: absolute; top: calc(15 * var(--s)); left: 50%; transform: translateX(-50%); width: calc(422 * var(--s)); }
+.home { height: calc(116 * var(--s)); }
 .menu { display: grid; grid-template-columns: repeat(2, calc(98 * var(--s))); gap: calc(15 * var(--s)); margin-top: calc(16 * var(--s)); }
 .tile { position: relative; width: calc(98 * var(--s)); height: calc(98 * var(--s)); flex-direction: column; justify-content: flex-start; padding-top: calc(4 * var(--s)); gap: 0; }
 .tile-label { position: absolute; bottom: calc(2 * var(--s)); }
@@ -364,12 +369,13 @@
 .chop-pop {
   position: absolute;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: calc(4 * var(--s));
   transform: translate(-50%, -50%);
   pointer-events: none !important;
   animation: chop-rise 900ms ease-out forwards;
 }
+.chop-pop-row { display: flex; align-items: center; gap: calc(4 * var(--s)); }
 @keyframes chop-rise {
   0% { opacity: 0; transform: translate(-50%, -20%) scale(0.6); }
   15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }

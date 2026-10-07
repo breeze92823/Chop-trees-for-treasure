@@ -12,9 +12,8 @@ Every named place, prop and HUD element in the Game Hub, so a change can be aske
                               N (−Z)
         ┌──────────────────────────────────────────────────────────┐
         │  x3 Luck Zone          (z −93 … −112, raised 0.6 m)      │
-        │  x2 Luck Zone          (z −70 … −90)                      │
-        │  ~~~~~~~~~~~~~~~~~~~~~ River (z −61 … −67) ~~~~~~~~~~~~~~ │
-        │  x1 Luck Zone          (z −27 … −58)                      │
+        │  x2 Luck Zone          (z −66.6 … −90)                    │
+        │  x1 Luck Zone          (z −27 … −66.6)                    │
         │                                                           │
         │  Sword Display              WORLDS Portal                 │
   Train │  Choppers Stall ▣     Plaza      ▣ Sell Treasure Stall    │ Leaderboards
@@ -89,12 +88,13 @@ Component: [Forest.jsx](src/world/Forest.jsx). Layout key: `FOREST`.
 
 | Name | Where | Notes |
 |---|---|---|
-| **x1 Luck Zone** | z −27 … −58 | Floating "🍀 x1 Luck" label at its front edge. |
-| **River** | z −61 … −67 | Blue tiled water strip you can walk on. |
-| **x2 Luck Zone** | z −70 … −90 | Same trees, with its own label. |
+| **x1 Luck Zone** | z −27 … −66.6 | Floating "🍀 x1 Luck" label at its front edge. |
+| **x2 Luck Zone** | z −66.6 … −90 | Same trees, with its own label. |
 | **x3 Luck Zone** | z −93 … −112 | Raised 0.6 m (walkable step). |
 | **Forest Corridor** | x −15 … 15, z −24 … −114 | The forest is a narrow corridor leading north out of the hub (`CORRIDOR`), walled in by the Cliff Terraces. |
-| **Forest Trees** | grid, x −15 … 15, 4.4 m spacing | Blocky trees: square trunk, 4 root blocks, 3 stacked studded leaf cubes. All instanced; each trunk is a collider. |
+| **Forest Trees** | grid, x −15 … 15, 4.4 m spacing | Blocky trees: square trunk, 4 root blocks, 3 stacked studded leaf cubes. All instanced; each trunk is a collider (removed when the tree is felled). |
+| **Tree Health Bars** | above a tree, y + 6.5·s, only while it is damaged and standing | One instanced billboard (`TreeBars` in [TreeFx.jsx](src/world/TreeFx.jsx)); fill + green→yellow→red colour per tree from `systems/treeHealth.js`. Hp is `TREE.hp` (10); each hit removes the player's Strength. |
+| **Falling Trees** | at a felled tree | `FallingTrees` in TreeFx.jsx: pooled copy topples away from the player (`TREE.fallMs`) and fades out over `TREE.fadeMs` (3 s), then is gone. Collider is removed the moment it starts falling. |
 
 ## Leaderboards Hall (east)
 

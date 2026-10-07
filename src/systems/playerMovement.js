@@ -1,7 +1,7 @@
 import { inputState } from './input.js'
 import { player, resetPlayer } from './playerState.js'
 import { getYaw, syncYawToPlayer } from './cameraOrbit.js'
-import { terrainHeightAt } from './terrainHeight.js'
+import { colliderAt, terrainHeightAt } from './terrainHeight.js'
 import { PHYSICS, SPAWN, SPAWN_FACING, WORLD_BOUNDS } from '../data/config.js'
 
 // Kinematic capsule, stepped once per frame: apply input -> gravity ->
@@ -72,7 +72,11 @@ export function step(dt) {
 
   // Too tall a ledge to step onto: stay put unless the player jumps high
   // enough. Try each axis on its own first so the player slides along walls.
-  if (terrainHeightAt(p.x, p.z, p.y) > p.y + MAX_STEP) {
+  // A player already inside a solid (chopping stands inside a tree's cell) may
+  // move within that same solid, so they can walk back out but not into the next.
+  const inside = colliderAt(prevX, prevZ, p.y)
+  const stuckIn = inside && inside.top > p.y + MAX_STEP && inside === colliderAt(p.x, p.z, p.y)
+  if (!stuckIn && terrainHeightAt(p.x, p.z, p.y) > p.y + MAX_STEP) {
     if (terrainHeightAt(p.x, prevZ, p.y) <= p.y + MAX_STEP) {
       p.z = prevZ
       player.velocity.z = 0
@@ -85,7 +89,9 @@ export function step(dt) {
     }
   }
 
-  const groundY = terrainHeightAt(p.x, p.z, p.y)
+  // Standing inside a solid (chopping): its top is not a floor, or the player
+  // would be lifted onto the tree.
+  const groundY = terrainHeightAt(p.x, p.z, p.y, stuckIn ? inside : null)
   if (p.y <= groundY) {
     p.y = groundY
     if (player.velocity.y < 0) player.velocity.y = 0

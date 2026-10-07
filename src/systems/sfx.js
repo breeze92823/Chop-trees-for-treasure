@@ -6,6 +6,17 @@ import { unlock, getMasterBus } from './audio.js'
 import {
   POWER_GAIN_SOUND_URL,
   POWER_GAIN_GAIN,
+  LEVEL_UP_SOUND_URL,
+  LEVEL_UP_PEAK,
+  LEVEL_UP_MAX_SECONDS,
+  LEVEL_UP_FADE_OUT_S,
+  LEVEL_UP_GAIN,
+  CHOP_HIT_SOUND_URL,
+  CHOP_HIT_PEAK,
+  CHOP_HIT_MAX_SECONDS,
+  CHOP_HIT_FADE_OUT_S,
+  CHOP_HIT_GAIN,
+  CHOP_HIT_RATE_JITTER,
   BUTTON_CLICK_GAIN,
   BUTTON_CLICK_SYNTH_FREQ_HZ,
   BUTTON_CLICK_SYNTH_ATTACK_S,
@@ -140,6 +151,7 @@ export function preload() {
   const ctx = unlock()
   if (!ctx) return
   loadBuffer(ctx, POWER_GAIN_SOUND_URL)
+  loadChopBuffer(ctx)
   synthesizeActionFailBuffer(ctx)
   synthesizeButtonClickBuffer(ctx)
 }
@@ -163,4 +175,90 @@ export function playButtonClick() {
   const ctx = unlock()
   if (!ctx) return
   synthesizeButtonClickBuffer(ctx).then((b) => playBuffer(ctx, b, BUTTON_CLICK_GAIN))
+}
+
+// Level-up jingle: same trim / peak-normalize / fade treatment as Lift-rock's.
+let levelUpBufferPromise = null
+function loadLevelUpBuffer(ctx) {
+  if (!levelUpBufferPromise) {
+    levelUpBufferPromise = fetch(LEVEL_UP_SOUND_URL)
+      .then((r) => r.arrayBuffer())
+      .then((data) => ctx.decodeAudioData(data))
+      .then((src) => {
+        const rate = src.sampleRate
+        const chans = Array.from({ length: src.numberOfChannels }, (_, c) => src.getChannelData(c))
+        let len = Math.min(src.length, Math.floor(LEVEL_UP_MAX_SECONDS * rate))
+        while (len > 0 && chans.every((d) => Math.abs(d[len - 1]) < 0.005)) len--
+        len = Math.max(len, 1)
+        let peak = 0
+        for (const d of chans) for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(d[i]))
+        const k = peak > 0 ? LEVEL_UP_PEAK / peak : 1
+        const fade = Math.min(Math.floor(LEVEL_UP_FADE_OUT_S * rate), len)
+        const out = ctx.createBuffer(src.numberOfChannels, len, rate)
+        chans.forEach((d, c) => {
+          const b = out.getChannelData(c)
+          for (let i = 0; i < len; i++) b[i] = d[i] * k
+          for (let i = 0; i < fade; i++) b[len - 1 - i] *= i / fade
+        })
+        return out
+      })
+      .catch(() => null)
+  }
+  return levelUpBufferPromise
+}
+
+// Axe hit: trim leading/trailing silence, cap length, peak-normalize, fade out.
+let chopBufferPromise = null
+function loadChopBuffer(ctx) {
+  if (!chopBufferPromise) {
+    chopBufferPromise = fetch(CHOP_HIT_SOUND_URL)
+      .then((r) => r.arrayBuffer())
+      .then((data) => ctx.decodeAudioData(data))
+      .then((src) => {
+        const rate = src.sampleRate
+        const chans = Array.from({ length: src.numberOfChannels }, (_, c) => src.getChannelData(c))
+        const quiet = (i) => chans.every((d) => Math.abs(d[i]) < 0.01)
+        let start = 0
+        while (start < src.length - 1 && quiet(start)) start++
+        let end = Math.min(src.length, start + Math.floor(CHOP_HIT_MAX_SECONDS * rate))
+        while (end > start + 1 && quiet(end - 1)) end--
+        const len = Math.max(end - start, 1)
+        let peak = 0
+        for (const d of chans) for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(d[start + i]))
+        const k = peak > 0 ? CHOP_HIT_PEAK / peak : 1
+        const fade = Math.min(Math.floor(CHOP_HIT_FADE_OUT_S * rate), len)
+        const out = ctx.createBuffer(src.numberOfChannels, len, rate)
+        chans.forEach((d, c) => {
+          const b = out.getChannelData(c)
+          for (let i = 0; i < len; i++) b[i] = d[start + i] * k
+          for (let i = 0; i < fade; i++) b[len - 1 - i] *= i / fade
+        })
+        return out
+      })
+      .catch(() => null)
+  }
+  return chopBufferPromise
+}
+
+// Fire-and-forget thunk when the axe lands on a tree.
+export function playChopHit() {
+  const ctx = unlock()
+  if (!ctx) return
+  loadChopBuffer(ctx).then((buffer) => {
+    if (!buffer) return
+    const source = ctx.createBufferSource()
+    source.buffer = buffer
+    source.playbackRate.value = 1 + (Math.random() * 2 - 1) * CHOP_HIT_RATE_JITTER
+    const gain = ctx.createGain()
+    gain.gain.value = CHOP_HIT_GAIN
+    source.connect(gain)
+    gain.connect(getMasterBus())
+    source.start(0)
+  })
+}
+
+export function playLevelUp() {
+  const ctx = unlock()
+  if (!ctx) return
+  loadLevelUpBuffer(ctx).then((b) => playBuffer(ctx, b, LEVEL_UP_GAIN))
 }

@@ -19,6 +19,7 @@
 // leaves the avatar static.
 import * as THREE from 'three'
 import { GAIT } from '../data/bloxity.js'
+import { CHOP_TIMING } from '../data/economy.js'
 import { attachAxe, detachAxe, updateAxe } from './axeProp.js'
 
 // phase offset per limb: legs are half a cycle apart; each arm is
@@ -113,6 +114,17 @@ export { AXES }
 const ease01 = (t) => t * t * (3 - 2 * t)
 
 function applyPoses(gait, dt, active) {
+  // Every fresh chop starts at the top of the cycle so the impact frame lines
+  // up with systems/chop.js.
+  if (active === 'swing' && gait.activePrev !== 'swing') {
+    // Carry the left/right alternation over between separate chop sessions.
+    gait.sideBase = (gait.sideBase || 0) + Math.round((gait.sessionTime || 0) / CHOP_TIMING.cycle)
+    gait.sessionTime = 0
+    gait.swingT = 0
+    gait.swingCount = 0
+  }
+  gait.swingActive = active === 'swing'
+  gait.activePrev = active
   for (const [name, fn] of poses) {
     const prev = gait.poseW[name] || 0
     const w = prev + ((name === active ? 1 : 0) - prev) * (1 - Math.exp(-POSE_EASE_HZ * dt))
@@ -128,15 +140,98 @@ registerPose('cheer', (gait, _dt, w) => {
   for (const a of gait.arms) a.bone.quaternion.copy(a.bind).premultiply(gait.q)
 })
 // Repeated two-handed overhead swing, e.g. an axe or pickaxe.
+// Looping side chop, timed by CHOP_TIMING (seconds, shared with systems/chop.js so
+// wood lands on the impact frame):
+//   wind-up  slow ease up: axe back over the shoulder, torso leaning back
+//   pause    a beat at the top
+//   swing    fast accelerating arc, torso rotating/leaning into it
+//   impact   arms stop dead, small recoil in the body
+//   recover  pull the axe out and ease back toward the wind-up pose
+const lerp = (a, b, t) => a + (b - a) * t
+const easeInOut = (t) => t * t * (3 - 2 * t)
+const easeIn = (t) => t * t * t
+const easeOut = (t) => 1 - (1 - t) * (1 - t)
+const clamp01 = (t) => (t < 0 ? 0 : t > 1 ? 1 : t)
+const seg = (t, a, b) => clamp01((t - a) / (b - a))
+
+// Horizontal side chop at chest height. The tree is on the character's left
+// (chop.js turns the body ~sideways to it): the torso winds away to the right,
+// then whips left while both arms extend level, the handle staying horizontal
+// with the head (edge facing the swing) leading into the trunk.
+export const CHOP_HIT_TWIST = 0.5 // rad; torso twist toward the tree at impact (arms point at tree - CHOP_AIM)
+export const CHOP_AIM = 0.29 // rad; arms point this far right of the trunk centre at impact
+// Which side of the trunk this chop hits: alternates every cycle (first strike
+// on the right face -> tree on the left, then the left face, ...). Eased to the
+// other side during recovery so the body swings over smoothly. Shared with chop.js.
+export function chopSide(count, t) {
+  const s = count % 2 === 0 ? 1 : -1
+  if (t < CHOP_TIMING.hold) return s
+  const k = (t - CHOP_TIMING.hold) / (CHOP_TIMING.cycle - CHOP_TIMING.hold)
+  return s * (1 - 2 * (k * k * (3 - 2 * k)))
+}
+const TWIST_BACK = -1.0 // wound away from the tree
+const PITCH_BACK = -1.15 // arms bent in, axe at chest height
+const PITCH_HIT = -1.5 // arms extended and locked, level
+const YAW_BACK = -0.5 // arms pulled across to the right
+const YAW_HIT = -0.02
+const LEAN_BACK = 0.04
+const LEAN_HIT = 0.22 // leaning into the hit
+const FREE_YAW = -0.5 // left hand reaches in to the handle
+
 registerPose('swing', (gait, dt, w) => {
-  gait.swingT = (gait.swingT || 0) + dt * 7
-  const s = 0.5 + 0.5 * Math.sin(gait.swingT) // 0..1
-  gait.q.setFromAxisAngle(gait.axis, (-2.6 + 2.2 * s * s) * ease01(w))
-  for (const a of gait.arms) a.bone.quaternion.copy(a.bind).premultiply(gait.q)
-  if (gait.spine) {
-    gait.q.setFromAxisAngle(AXES.x, 0.35 * s * ease01(w))
-    gait.spine.quaternion.copy(gait.spineBind).premultiply(gait.q)
+  const T = CHOP_TIMING
+  if (gait.swingActive) gait.sessionTime = (gait.sessionTime || 0) + dt
+  const prevT = gait.swingT || 0
+  gait.swingT = (prevT + dt) % T.cycle
+  if (gait.swingT < prevT) gait.swingCount = (gait.swingCount || 0) + 1
+  const t = gait.swingT
+  const sg = chopSide((gait.sideBase || 0) + (gait.swingCount || 0), t) // +1 tree on the left, -1 on the right
+  gait.chopSide = sg
+  let twist, pitch, yaw, lean, dip, shake = 0
+  if (t < T.windup) {
+    const k = easeInOut(seg(t, 0, T.windup))
+    twist = lerp(CHOP_HIT_TWIST * 0.55, TWIST_BACK, k)
+    pitch = lerp(PITCH_HIT * 0.9, PITCH_BACK, k)
+    yaw = lerp(YAW_HIT * 0.5, YAW_BACK, k)
+    lean = lerp(LEAN_HIT * 0.6, LEAN_BACK, k)
+    dip = lerp(0.03, 0.07, k)
+  } else if (t < T.top) {
+    twist = TWIST_BACK; pitch = PITCH_BACK; yaw = YAW_BACK; lean = LEAN_BACK; dip = 0.07
+  } else if (t < T.impact) {
+    const k = easeIn(seg(t, T.top, T.impact))
+    twist = lerp(TWIST_BACK, CHOP_HIT_TWIST, k)
+    pitch = lerp(PITCH_BACK, PITCH_HIT, easeOut(seg(t, T.top, T.impact))) // arms straighten early
+    yaw = lerp(YAW_BACK, YAW_HIT, k)
+    lean = lerp(LEAN_BACK, LEAN_HIT, k)
+    dip = lerp(0.07, 0.1, k)
+  } else if (t < T.hold) {
+    // Locked arms absorb the hit: a small decaying shake in arms and shoulders.
+    twist = CHOP_HIT_TWIST; pitch = PITCH_HIT; yaw = YAW_HIT; lean = LEAN_HIT; dip = 0.1
+    const k = seg(t, T.impact, T.hold)
+    shake = Math.sin(k * 40) * (1 - k) * 0.05
+  } else {
+    const k = easeInOut(seg(t, T.hold, T.cycle))
+    twist = lerp(CHOP_HIT_TWIST, CHOP_HIT_TWIST * 0.55, k)
+    pitch = lerp(PITCH_HIT, PITCH_HIT * 0.9, k)
+    yaw = lerp(YAW_HIT, YAW_HIT * 0.5, k)
+    lean = lerp(LEAN_HIT, LEAN_HIT * 0.6, k)
+    dip = lerp(0.1, 0.03, k)
   }
+  const e = ease01(w)
+  gait.arms.forEach((a, i) => {
+    const free = a.bone.name === 'ArmL1'
+    gait.q.setFromAxisAngle(gait.axis, (pitch + shake) * e)
+    a.bone.quaternion.copy(a.bind).premultiply(gait.q)
+    gait.q.setFromAxisAngle(AXES.y, (yaw * sg + (free ? FREE_YAW * (0.4 + 0.6 * seg(t, 0, T.impact)) : 0)) * e)
+    a.bone.quaternion.premultiply(gait.q)
+  })
+  if (gait.spine) {
+    gait.q.setFromAxisAngle(AXES.x, (lean + shake) * e)
+    gait.spine.quaternion.copy(gait.spineBind).premultiply(gait.q)
+    gait.q.setFromAxisAngle(AXES.y, (twist * sg + shake * 0.5) * e)
+    gait.spine.quaternion.premultiply(gait.q)
+  }
+  gait.built.root.position.y -= dip * e
 })
 
 // speed01: horizontal speed / max move speed (clamped to 0..1). grounded gates
@@ -145,7 +240,7 @@ export function updateGait(gait, dt, speed01, grounded = true, pose = null) {
   if (!gait || dt <= 0) return
   tickGait(gait, dt, speed01, grounded)
   applyPoses(gait, dt, pose)
-  updateAxe(gait.axe, gait.poseW.swing || 0, gait.amp, gait.phase)
+  updateAxe(gait.axe, gait.poseW.swing || 0, gait.amp, gait.phase, gait.chopSide || 1)
 }
 
 function tickGait(gait, dt, speed01, grounded) {

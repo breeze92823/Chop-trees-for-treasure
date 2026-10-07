@@ -65,17 +65,17 @@ export const STRENGTH_TREES = [
   { x: -30, z: 12.5, tier: 2, cost: 559, cur: 'coin', mult: 'x300', pad: '#35c23a', kind: 'jungle' },
 ]
 
-// Choppable forest, split into luck zones by a river and a step.
+// Choppable forest in three luck zones (x1 and x2 run straight into each other;
+// x3 is on a low step). x1 is nine tree rows deep (spacing 4.4 from z0 = -27).
 export const FOREST = {
   x0: CORRIDOR.x0,
   x1: CORRIDOR.x1,
   spacing: 4.4,
   zones: [
-    { label: 'x1 Luck', mult: 1, z0: -27, z1: -58, y: 0 },
-    { label: 'x2 Luck', mult: 2, z0: -70, z1: -90, y: 0 },
+    { label: 'x1 Luck', mult: 1, z0: -27, z1: -66.6, y: 0 },
+    { label: 'x2 Luck', mult: 2, z0: -66.6, z1: -90, y: 0 },
     { label: 'x3 Luck', mult: 3, z0: -93, z1: -112, y: 0.6 },
   ],
-  river: { z0: -61, z1: -67 },
 }
 
 // Leaderboards: purple raised hall at the east end of the plaza.
