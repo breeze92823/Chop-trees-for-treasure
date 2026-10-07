@@ -1,0 +1,79 @@
+// THE file to edit when reskinning this base for a new game. Everything a
+// theme usually changes (identity, ground, colours, lighting, camera, physics
+// feel) is a constant here; systems/ and components/ read it and hold no
+// theme values of their own. Bloxity SDK constants live in data/bloxity.js.
+
+// --- Identity -------------------------------------------------------------
+export const GAME_SLUG = 'chop-trees-for-treasure' // slug registered on bloxity.io
+export const GAME_TITLE = 'Chop Trees for Treasure'
+
+// --- World (metres: +X east, +Z south, +Y up) -------------------------------
+export const GROUND_Y = 0
+export const GROUT = 0.05 // tile material grout width (materials/tile.js)
+// Walkable rectangle; playerMovement clamps to it (the "invisible wall").
+// The hub basin (see world/layout.js); the terraced cliffs sit just outside it.
+export const WORLD_BOUNDS = { minX: -34.5, maxX: 54, minZ: -114, maxZ: 28 }
+export const SPAWN = { x: 0, y: 0.3, z: 6 }
+export const SPAWN_FACING = Math.PI // yaw the character faces on spawn (PI = toward -Z)
+
+// --- Physics feel (systems/playerMovement.js) ---------------------------------
+export const PHYSICS = {
+  moveSpeed: 10, // m/s on flat ground
+  accel: 45, // m/s^2 toward the target velocity
+  gravity: -22, // m/s^2
+  jumpSpeed: 7.5, // m/s
+  maxStep: 0.65, // m a ledge can be and still be walked onto without jumping
+  killY: -30, // fell this far below the ground: respawn
+}
+export const PLAYER_DIMS = { radius: 0.4, height: 1.8 }
+
+// --- Palette ---------------------------------------------------------------
+export const COLORS = {
+  grass: '#4fd12a',
+  grass2: '#46c424',
+  dirt: '#b8693d', // terraced cliff faces: two-tone brown checker
+  dirt2: '#a85c34',
+  path: '#b3b4ba', // plaza: two-tone grey checker
+  path2: '#a7a8af',
+  curb: '#74757d',
+  train: '#f6a83a', // Train Strength terraces
+  train2: '#eb9a2c',
+  board: '#7d45e6', // Leaderboards purple
+  board2: '#6c37d4',
+  horizon: '#cdeef6', // fog + clear colour; matches the bottom of the sky dome
+}
+
+// Default (signed-out / fallback) character look.
+export const CHARACTER_COLORS = { skin: '#f2c79a', suit: '#2f9e8f', hair: '#5a3a22' }
+
+// --- Lighting (components/Lighting.jsx) ----------------------------------------
+export const LIGHT = {
+  sun: { color: '#fff1d6', intensity: 2.3, offset: [-55, 75, 30] }, // offset from the world centre
+  hemisphere: { sky: '#e6f7ff', ground: '#6f7f4a', intensity: 1.1 },
+  ambient: 0.35,
+  shadowMapSize: 4096,
+}
+export const FOG = { near: 170, far: 380 }
+
+// --- Camera (systems/cameraOrbit.js) ---------------------------------------------
+export const CAMERA = {
+  fov: 70,
+  near: 0.1,
+  far: 500,
+  startPitch: 0.32, // radians above the horizon
+  minPitch: -0.1,
+  maxPitch: 1.2,
+  distance: 13, // starting boom length, m
+  minDistance: 3,
+  maxDistance: 15,
+  positionSmoothing: 12, // 1/s, higher = stiffer follow
+  lookSmoothing: 20,
+  targetHeight: 0.6, // look-at point as a fraction of player height
+}
+
+// --- Multiplayer (systems/net.js) -------------------------------------------------
+export const NET = {
+  room: 'world', // room name the server registers (server/src/app.config.ts)
+  sendHz: 15, // pose updates per second
+  remoteSmoothing: 12, // 1/s exponential smoothing of remote positions
+}
