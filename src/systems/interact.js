@@ -8,19 +8,21 @@
 // card (components/InteractPrompt.jsx) polls interactState/interactHoldState.
 import { isKeyDown, INTERACT_KEY } from './input.js'
 import { addSystem } from './loop.js'
-import { step as stepHold } from './interactHold.js'
+import { HOLD_MS, step as stepHold } from './interactHold.js'
 import { playPowerGainPop, preload as preloadSfx } from './sfx.js'
 
 export const interactState = {
   key: null, // identifies the interactable in range, null when none
   label: '', // e.g. "Chop Tree" — shown after the E keycap
   onConfirm: null,
+  holdMs: HOLD_MS, // 0 = instant (loot pickups)
 }
 
-export function setInteractTarget(key, label, onConfirm) {
+export function setInteractTarget(key, label, onConfirm, holdMs = HOLD_MS) {
   interactState.key = key
   interactState.label = label
   interactState.onConfirm = onConfirm
+  interactState.holdMs = holdMs
 }
 
 export function clearInteractTarget(key) {
@@ -31,10 +33,11 @@ export function clearInteractTarget(key) {
 }
 
 function step() {
-  const confirmed = stepHold(interactState.key, isKeyDown(INTERACT_KEY))
+  const confirmed = stepHold(interactState.key, isKeyDown(INTERACT_KEY), interactState.holdMs)
   if (!confirmed) return
-  playPowerGainPop()
-  interactState.onConfirm?.()
+  // onConfirm returns false when it was blocked (it shows its own failure popup), so skip the success pop.
+  const blocked = interactState.onConfirm?.() === false
+  if (!blocked) playPowerGainPop()
 }
 
 export function install() {

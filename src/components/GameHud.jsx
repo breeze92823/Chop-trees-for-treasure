@@ -7,20 +7,26 @@ import EggMenu from './EggMenu.jsx'
 import HatchOverlay from './HatchOverlay.jsx'
 import PetsMenu from './PetsMenu.jsx'
 import IndexMenu from './IndexMenu.jsx'
+import RebirthMenu from './RebirthMenu.jsx'
+import SellMenu from './SellMenu.jsx'
+import ChoppersMenu from './ChoppersMenu.jsx'
+import AurasMenu from './AurasMenu.jsx'
 import { BookIcon, CashIcon, RebirthIcon } from './hudIcons.jsx'
 import ChopFx from './ChopFx.jsx'
 import LevelUpPopup from './LevelUpPopup.jsx'
 import Announcements from './Announcements.jsx'
 import { useGameStore } from '../store/useGameStore.js'
 import { usePlayerData } from '../store/usePlayerData.js'
-import { petSlots } from '../systems/pets.js'
+import { BAG_MAX } from '../data/loot.js'
+import { rebirthProgress } from '../systems/rebirth.js'
 import { playButtonClick } from '../systems/sfx.js'
 import { formatNumber } from '../utils/format.js'
 import '../styles/gameHud.css'
 
 // The in-game HUD from the reference screenshots. Wood, the equipped-pet
-// counter and the Pets / Index tiles are live (store/usePlayerData.js), and
-// the egg / pets / index / hatch windows mount here too. The other values are
+// counter, rebirths and the Pets / Index / Rebirth tiles are live
+// (store/usePlayerData.js), and the egg / pets / index / rebirth / hatch
+// windows mount here too. The other values are
 // placeholders whose buttons do nothing (they only swallow the pointer so a
 // click doesn't orbit the camera). Everything is laid out in reference pixels
 // (the screenshots are 1920x991) and scaled by --s in gameHud.css.
@@ -67,7 +73,7 @@ function LevelBar() {
       <div className="level">
         <div className="level-fill" style={{ width: `${(xp / need) * 100}%` }} />
         <T size={44} w={5} className="level-l">{`LEVEL ${level}`}</T>
-        <T size={40} w={5} className="level-r">{`${xp}/${need}`}</T>
+        <T size={40} w={5} className="level-r">{`${formatNumber(xp)}/${need}`}</T>
       </div>
       <div className="packs">
         <Btn className="pack" style={{ '--bg': '#ff8a1f' }}><Icon name="coin" size={26} /><T size={28}>+8.5K</T></Btn>
@@ -141,18 +147,18 @@ function OpPet() {
 // --- Left side: auto chop + menu grid ---------------------------------------------
 const MENU = [
   { label: 'Shop', emoji: '🧺', bg: '#ffcf3a' },
-  { label: 'Rebirth', icon: RebirthIcon, bg: '#ff8a5a', badge: '0%' },
+  { label: 'Rebirth', icon: RebirthIcon, bg: '#ff8a5a', window: 'rebirthMenu', badge: true },
   { label: 'Index', icon: BookIcon, bg: '#a066f2', window: 'indexMenu' },
   { label: 'Invite', emoji: '🐥', bg: '#5fd14a' },
   { label: 'Pets', emoji: '🐾', bg: '#3a8ef0', window: 'petsMenu' },
   { label: 'Quests', emoji: '📜', bg: '#d9b48a' },
 ]
 
-// Pets / Index: one window at a time; the egg window closes under them.
+// Pets / Index / Rebirth: one window at a time; the egg window closes under them.
 function toggleWindow(key) {
   playButtonClick()
   const open = !useGameStore.getState()[key]
-  useGameStore.setState({ petsMenu: false, indexMenu: false, ...(open && { eggMenu: null, autoHatch: false }), [key]: open })
+  useGameStore.setState({ petsMenu: false, indexMenu: false, rebirthMenu: false, sellMenu: false, choppersMenu: false, aurasMenu: false, autoSpin: false, ...(open && { eggMenu: null, autoHatch: false }), [key]: open })
 }
 
 function toggleAutoChop() {
@@ -162,6 +168,7 @@ function toggleAutoChop() {
 
 function LeftMenu() {
   const autoChop = useGameStore((s) => s.autoChop)
+  const rebirthPct = usePlayerData((s) => `${Math.floor(rebirthProgress(s) * 100)}%`)
   return (
     <div className="left" onPointerDown={stop}>
       <T size={30} w={4} fill={grad('#fff3a0', '#ffb21f')} stroke="#4a2a00" className="auto-title">Auto Collects</T>
@@ -173,7 +180,7 @@ function LeftMenu() {
           <Btn key={m.label} className="tile" style={{ '--bg': m.bg }} onClick={m.window && (() => toggleWindow(m.window))}>
             {m.icon ? <m.icon size={64} /> : <Emoji size={58}>{m.emoji}</Emoji>}
             <T size={24} w={4} className="tile-label">{m.label}</T>
-            {m.badge && <T size={24} w={4} fill={grad('#fff3a0', '#ffc21a')} className="tile-badge">{m.badge}</T>}
+            {m.badge && <T size={24} w={4} fill={grad('#fff3a0', '#ffc21a')} className="tile-badge">{rebirthPct}</T>}
           </Btn>
         ))}
       </div>
@@ -184,14 +191,15 @@ function LeftMenu() {
 // --- Bottom left: wood, backpack, rebirths, cash -----------------------------------------
 function Stats() {
   const wood = usePlayerData((s) => s.wood)
-  const equipped = usePlayerData((s) => s.equipped.length)
-  const slots = usePlayerData(petSlots)
+  const carried = usePlayerData((s) => s.bag.length)
+  const rebirths = usePlayerData((s) => s.rebirths)
+  const cash = usePlayerData((s) => s.cash)
   return (
     <div className="stats">
       <div className="stat"><Icon name="log" size={52} /><T size={36} w={4} fill={grad('#ffe0b0', '#e8a868')} stroke="#3a1a08">{formatNumber(wood)}</T></div>
-      <div className="stat"><Emoji size={40}>🎒</Emoji><T size={36} w={4}>{`${equipped}/${slots}`}</T></div>
-      <div className="stat"><RebirthIcon size={44} /><T size={36} w={4}>0</T></div>
-      <div className="stat cash"><CashIcon size={84} /><T size={56} w={5} fill={grad('#c8ff9a', '#2fcf3a')} stroke="#0c3a10">$232</T></div>
+      <div className="stat"><Emoji size={40}>🎒</Emoji><T size={36} w={4}>{`${carried}/${BAG_MAX}`}</T></div>
+      <div className="stat"><RebirthIcon size={44} /><T size={36} w={4}>{formatNumber(rebirths)}</T></div>
+      <div className="stat cash"><CashIcon size={84} /><T size={56} w={5} fill={grad('#c8ff9a', '#2fcf3a')} stroke="#0c3a10">{`$${formatNumber(cash)}`}</T></div>
     </div>
   )
 }
@@ -209,6 +217,10 @@ export default function GameHud() {
       <EggMenu />
       <PetsMenu />
       <IndexMenu />
+      <RebirthMenu />
+      <SellMenu />
+      <ChoppersMenu />
+      <AurasMenu />
       <ChopFx />
       <LevelUpPopup />
       <Announcements />

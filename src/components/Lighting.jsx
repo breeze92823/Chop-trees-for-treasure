@@ -1,28 +1,36 @@
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { Object3D } from 'three'
-import { LIGHT, WORLD_BOUNDS } from '../data/config.js'
+import { LIGHT } from '../data/config.js'
+import { player } from '../systems/playerState.js'
 
-// Sun offset from the world centre. The whole world fits in one shadow
-// frustum, so the rig is fixed rather than following the player. For a world
-// too big for one frustum, make the target/position follow player.position.
-const CX = (WORLD_BOUNDS.minX + WORLD_BOUNDS.maxX) / 2
-const CZ = (WORLD_BOUNDS.minZ + WORLD_BOUNDS.maxZ) / 2
+// The forest corridor is far longer than one shadow frustum can cover sharply,
+// so the sun rig follows the player: it keeps the same offset and aims at a
+// point that tracks them (snapped to SNAP metres so shadows don't shimmer).
 const [OX, OY, OZ] = LIGHT.sun.offset
-const SUN = [CX + OX, OY, CZ + OZ]
+const SHADOW_EXTENT = 75 // half-size of the shadow frustum, m
+const SNAP = 2
 // The light aims at this; it must be in the scene for its matrix to update.
 const TARGET = new Object3D()
-TARGET.position.set(CX, 0, CZ)
-const SHADOW_EXTENT = Math.max(WORLD_BOUNDS.maxX - WORLD_BOUNDS.minX, WORLD_BOUNDS.maxZ - WORLD_BOUNDS.minZ) * 0.62
 
 // Bright, flat-ish daylight: strong sky/ground bounce so colours stay
 // saturated, and one shadow-casting sun. Tune everything in data/config.js LIGHT.
 export default function Lighting() {
+  const sun = useRef()
+  useFrame(() => {
+    const x = Math.round(player.position.x / SNAP) * SNAP
+    const z = Math.round(player.position.z / SNAP) * SNAP
+    TARGET.position.set(x, 0, z)
+    sun.current?.position.set(x + OX, OY, z + OZ)
+  })
   return (
     <>
       <hemisphereLight args={[LIGHT.hemisphere.sky, LIGHT.hemisphere.ground, LIGHT.hemisphere.intensity]} />
       <ambientLight intensity={LIGHT.ambient} />
       <primitive object={TARGET} />
       <directionalLight
-        position={SUN}
+        ref={sun}
+        position={[OX, OY, OZ]}
         target={TARGET}
         color={LIGHT.sun.color}
         intensity={LIGHT.sun.intensity}

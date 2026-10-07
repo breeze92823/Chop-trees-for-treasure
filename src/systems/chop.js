@@ -5,15 +5,18 @@
 // components/ChopFx.jsx shows the "+wood" pop from onChop().
 import { CHOP, CHOP_TIMING } from '../data/economy.js'
 import { FOREST_TREES } from '../world/forestTrees.js'
+import { HUB } from '../world/layout.js'
 import { usePlayerData } from '../store/usePlayerData.js'
 import { useGameStore } from '../store/useGameStore.js'
 import { player } from './playerState.js'
+import { colliderAt } from './terrainHeight.js'
 import { addSystem } from './loop.js'
 import { CHOP_HIT_TWIST, CHOP_AIM, chopSide } from './avatarAnim.js'
 import { isInputLocked } from './input.js'
 import { playChopHit } from './sfx.js'
 import { woodMultiplier } from './pets.js'
 import { gainStrength } from './strengthGain.js'
+import { chopperStrength } from './choppers.js'
 import { ALIVE, damageTree, install as installTrees, treePhase } from './treeHealth.js'
 
 let held = false
@@ -52,15 +55,27 @@ let sideBase = 0 // swings completed in earlier sessions, so the side keeps alte
 let cycleCount = 0 // swings since the pose started; parity picks the side (see chopSide)
 const IMPACT_MS = CHOP_TIMING.impact * 1000
 
+// Inside the hub a click swings at the air and still trains Strength (no tree, so no wood).
+function inHub() {
+  const { x, z } = player.position
+  return x >= HUB.minX && x <= HUB.maxX && z >= HUB.minZ && z <= HUB.maxZ
+}
+
 function land(tree) {
-  if (!tree) return
+  if (!tree) {
+    if (!inHub()) return
+    playChopHit()
+    const strength = gainStrength(chopperStrength())
+    for (const fn of listeners) fn(0, strength)
+    return
+  }
   playChopHit()
   // Damage is the Strength held before this swing's gain; wood only drops when the tree falls.
   const felled = damageTree(tree, usePlayerData.getState().strength, player.position.x, player.position.z)
   const gain = felled ? Math.round(CHOP.wood * tree.mult * woodMultiplier()) : 0
   if (gain) usePlayerData.setState((s) => ({ wood: s.wood + gain }))
-  gainStrength(CHOP.strengthGain)
-  for (const fn of listeners) fn(gain, CHOP.strengthGain)
+  const strength = gainStrength(chopperStrength())
+  for (const fn of listeners) fn(gain, strength)
 }
 
 // Stand close with the tree on the character's left: the pelvis is turned
@@ -76,8 +91,14 @@ function faceSideways(tree, side) {
   const gap = dist - CHOP.standDist
   if (gap > 0.02 && dist > 0.001) {
     const stepLen = Math.min(gap, 0.06)
-    p.x += (dx / dist) * stepLen
-    p.z += (dz / dist) * stepLen
+    const nx = p.x + (dx / dist) * stepLen
+    const nz = p.z + (dz / dist) * stepLen
+    // Never shuffle into a neighbouring tree's cell: that would skip a row.
+    const into = colliderAt(nx, nz, p.y)
+    if (!into?.tree || into === colliderAt(p.x, p.z, p.y)) {
+      p.x = nx
+      p.z = nz
+    }
   }
 }
 
@@ -87,7 +108,7 @@ function step() {
   if (cycleStart === null && !wants) return // idle: skip the tree scan
   const tree = nearestTree() // one scan per frame
   if (cycleStart === null) {
-    if (!tree) return
+    if (!tree && !inHub()) return
     cycleStart = now
     cycleCount = 0
     landed = false
@@ -101,7 +122,7 @@ function step() {
   }
   if (elapsed >= CHOP.cooldownMs) {
     // Finish the whole cycle before stopping; loop straight on while held.
-    if (wants && tree) {
+    if (wants && (tree || inHub())) {
       cycleStart += CHOP.cooldownMs
       cycleCount++
       landed = false

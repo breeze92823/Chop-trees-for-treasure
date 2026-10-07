@@ -32,7 +32,8 @@ function reset() {
 // changing (walking from one prompt to another mid-hold), resets the timer
 // to zero — there is no carrying partial progress between different actions,
 // same as an early release visibly snapping the ring back to empty.
-export function step(zoneKey, keyDown) {
+// holdMs overrides HOLD_MS for a target (0 = fires the frame E goes down, like loot pickups).
+export function step(zoneKey, keyDown, holdMs = HOLD_MS) {
   if (!zoneKey || !keyDown) {
     reset()
     return false
@@ -43,8 +44,8 @@ export function step(zoneKey, keyDown) {
   }
   interactHoldState.active = true
   const elapsed = performance.now() - startedAt
-  interactHoldState.progress = Math.min(1, elapsed / HOLD_MS)
-  if (elapsed >= HOLD_MS) {
+  interactHoldState.progress = holdMs > 0 ? Math.min(1, elapsed / holdMs) : 1
+  if (elapsed >= holdMs) {
     reset()
     return true
   }

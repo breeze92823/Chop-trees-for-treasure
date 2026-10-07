@@ -16,10 +16,15 @@
 // Inner edge of the terraced cliffs that ring the basin.
 // The hub is a wide basin; the forest is a narrow corridor leading north out of
 // it, walled in by the same terraced cliffs (see Cliffs.jsx).
+// Forest zone grid (see FOREST below): 20 zones of ZONE_DEPTH m starting at z = FOREST_Z0.
+const ZONE_COUNT = 20
+const ZONE_DEPTH = 39.6
+const FOREST_Z0 = -27
+export const FOREST_END_Z = FOREST_Z0 - ZONE_COUNT * ZONE_DEPTH
 export const HUB = { minX: -34.5, maxX: 54, minZ: -24, maxZ: 28 }
 export const CORRIDOR = { x0: -15, x1: 15 }
 // Bounding box of hub + corridor.
-export const BASIN = { minX: HUB.minX, maxX: HUB.maxX, minZ: -114, maxZ: HUB.maxZ }
+export const BASIN = { minX: HUB.minX, maxX: HUB.maxX, minZ: FOREST_END_Z, maxZ: HUB.maxZ }
 export const CLIFF = { tiers: 3, tierHeight: 3.5, tierDepth: 6 }
 
 // Grey plaza slab and the four raised green lawns that turn it into a plus.
@@ -27,10 +32,11 @@ export const PLAZA = { x0: -20, x1: 33, z0: -22, z1: 15, top: 0.1 }
 export const LAWN_TOP = 0.2
 export const CURB = 0.7 // dark rim width around each lawn
 export const LAWNS = [
-  { x0: -20, x1: -9, z0: -22, z1: -4.5 }, // NW (Choppers)
-  { x0: 9, x1: 31, z0: -22, z1: -4.5 }, // NE (Sell Treasure, WORLDS)
-  { x0: -20, x1: -9, z0: 4.5, z1: 27.5 }, // SW (Auras, Forge)
-  { x0: 9, x1: 31, z0: 4.5, z1: 27.5 }, // SE (Upgrades, Craft, fountain)
+  // The lawns reach in to leave only a 7 m grey path (x -3.5..3.5) up to the forest and down to the eggs.
+  { x0: -20, x1: -3.5, z0: -22, z1: -4.5 }, // NW (Choppers)
+  { x0: 3.5, x1: 31, z0: -22, z1: -4.5 }, // NE (Sell Treasure, WORLDS)
+  { x0: -20, x1: -3.5, z0: 4.5, z1: 27.5 }, // SW (Auras, Forge)
+  { x0: 3.5, x1: 31, z0: 4.5, z1: 27.5 }, // SE (Upgrades, Craft, fountain)
   { x0: -20, x1: 31, z0: 15, z1: 27.5 }, // S (eggs, phoenix); overlaps SW/SE so no seam
 ]
 
@@ -65,17 +71,52 @@ export const STRENGTH_TREES = [
   { x: -30, z: 12.5, tier: 2, cost: 559, cur: 'coin', mult: 'x300', pad: '#35c23a', kind: 'jungle' },
 ]
 
-// Choppable forest in three luck zones (x1 and x2 run straight into each other;
-// x3 is on a low step). x1 is nine tree rows deep (spacing 4.4 from z0 = -27).
+// Choppable forest in 20 luck zones (all at ground level, running straight into each other), each nine tree rows deep (spacing 4.4 from z0 = -27).
+// Luck multipliers: 1, 2, 3, then +2 x3 (5, 7, 9), +3 x4 (12, 15, 18, 21), +4 x5 ... — the step grows by one each time its run gets one longer.
+// `color` tints that zone's canopy (see Forest.jsx / TreeFx.jsx).
+const ZONE_COLORS = [
+  '#41b62a', // x1 green
+  '#9be02a', // lime
+  '#1fb89a', // teal
+  '#2bc4e8', // cyan
+  '#2f6df0', // blue
+  '#5a3fe0', // indigo
+  '#9a45e8', // purple
+  '#e03fc8', // magenta
+  '#ff7fb0', // pink
+  '#e8302a', // red
+  '#f08a1f', // orange
+  '#f2d21e', // yellow
+  '#d9a21a', // gold
+  '#a8683a', // bronze
+  '#6fe8b0', // mint
+  '#a8e4ff', // ice
+  '#e6e8f0', // silver
+  '#8a8ea0', // slate
+  '#b8a2ff', // lavender
+  '#3a3a4a', // night
+]
+function luckMultipliers(n) {
+  const out = [1]
+  for (let step = 1, run = 2; out.length < n; step++, run++) {
+    for (let i = 0; i < run && out.length < n; i++) out.push(out[out.length - 1] + step)
+  }
+  return out
+}
+const LUCK = luckMultipliers(ZONE_COUNT) // 1 2 3 5 7 9 12 15 18 21 25 29 33 37 41 46 51 56 61 66
+
 export const FOREST = {
   x0: CORRIDOR.x0,
   x1: CORRIDOR.x1,
   spacing: 4.4,
-  zones: [
-    { label: 'x1 Luck', mult: 1, z0: -27, z1: -66.6, y: 0 },
-    { label: 'x2 Luck', mult: 2, z0: -66.6, z1: -90, y: 0 },
-    { label: 'x3 Luck', mult: 3, z0: -93, z1: -112, y: 0.6 },
-  ],
+  zones: LUCK.map((mult, i) => ({
+    label: `x${mult} Luck`,
+    mult,
+    z0: FOREST_Z0 - i * ZONE_DEPTH,
+    z1: FOREST_Z0 - (i + 1) * ZONE_DEPTH,
+    y: 0,
+    color: ZONE_COLORS[i],
+  })),
 }
 
 // Leaderboards: purple raised hall at the east end of the plaza.

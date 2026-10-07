@@ -65,7 +65,7 @@ export function makeGait(built) {
   gait.arms = ['ArmL1', 'ArmR1']
     .filter((n) => nodes0[n])
     .map((n) => ({ bone: nodes0[n], bind: nodes0[n].quaternion.clone() }))
-  gait.axe = attachAxe(nodes0)
+  gait.axe = attachAxe(nodes0, built.axeModel)
 
   // --- Path 1: an embedded clip ------------------------------------------
   const run = (built.clips || []).find((c) => GAIT.runClip.test(c.name))

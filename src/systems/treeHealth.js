@@ -16,7 +16,7 @@ export const GONE = 2
 export const MAX_FALLING = 8 // pool size in TreeFx; the oldest finishes early beyond this
 
 const N = FOREST_TREES.length
-export const treeHp = new Float32Array(N).fill(TREE.hp)
+export const treeHp = Float32Array.from(FOREST_TREES, (t) => t.hp)
 export const treePhase = new Uint8Array(N)
 // Trees currently toppling / fading: { tree, t (s), dx, dz (unit fall direction) }
 export const felling = []
@@ -79,7 +79,7 @@ export function onTreesReset(fn) {
 }
 
 function resetTrees() {
-  treeHp.fill(TREE.hp)
+  FOREST_TREES.forEach((t, i) => (treeHp[i] = t.hp))
   treePhase.fill(ALIVE)
   felling.length = 0
   treeVersion.v++

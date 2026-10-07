@@ -11,8 +11,7 @@ Every named place, prop and HUD element in the Game Hub, so a change can be aske
 ```
                               N (−Z)
         ┌──────────────────────────────────────────────────────────┐
-        │  x3 Luck Zone          (z −93 … −112, raised 0.6 m)      │
-        │  x2 Luck Zone          (z −66.6 … −90)                    │
+        │  x2 … x66 Luck Zones   (z −66.6 … −819, 20 zones in all)     │
         │  x1 Luck Zone          (z −27 … −66.6)                    │
         │                                                           │
         │  Sword Display              WORLDS Portal                 │
@@ -89,12 +88,12 @@ Component: [Forest.jsx](src/world/Forest.jsx). Layout key: `FOREST`.
 | Name | Where | Notes |
 |---|---|---|
 | **x1 Luck Zone** | z −27 … −66.6 | Floating "🍀 x1 Luck" label at its front edge. |
-| **x2 Luck Zone** | z −66.6 … −90 | Same trees, with its own label. |
-| **x3 Luck Zone** | z −93 … −112 | Raised 0.6 m (walkable step). |
-| **Forest Corridor** | x −15 … 15, z −24 … −114 | The forest is a narrow corridor leading north out of the hub (`CORRIDOR`), walled in by the Cliff Terraces. |
+| **x2 … x66 Luck Zones** | z −66.6 … −819, 39.6 m each | 20 zones in all, mult 1, 2, 3, 5, 7, 9, 12, 15, 18, 21, 25, 29, 33, 37, 41, 46, 51, 56, 61, 66 (step grows by 1 each time its run gets one longer; `luckMultipliers` in [layout.js](src/world/layout.js)). Each zone has its own canopy colour (`ZONE_COLORS`: green, lime, teal, cyan, blue, indigo, purple, magenta, pink, red, orange, yellow, gold, bronze, mint, ice, silver, slate, lavender, night) and floating label.
+| **Forest Corridor** | x −15 … 15, z −24 … −148 | The forest is a narrow corridor leading north out of the hub (`CORRIDOR`), walled in by the Cliff Terraces. |
 | **Forest Trees** | grid, x −15 … 15, 4.4 m spacing | Blocky trees: square trunk, 4 root blocks, 3 stacked studded leaf cubes. All instanced; each trunk is a collider (removed when the tree is felled). |
 | **Tree Health Bars** | above a tree, y + 6.5·s, only while it is damaged and standing | One instanced billboard (`TreeBars` in [TreeFx.jsx](src/world/TreeFx.jsx)); fill + green→yellow→red colour per tree from `systems/treeHealth.js`. Hp is `TREE.hp` (10); each hit removes the player's Strength. |
 | **Falling Trees** | at a felled tree | `FallingTrees` in TreeFx.jsx: pooled copy topples away from the player (`TREE.fallMs`) and fades out over `TREE.fadeMs` (3 s), then is gone. Collider is removed the moment it starts falling. |
+| **Loot Trees (x1 Luck)** | 22 of the zone's 63 trees, one per even slice of the zone | `LOOT_PLAN` in [systems/loot.js](src/systems/loot.js): 3 Uncommon, 19 Common. Felling one drops a floating item ([world/Loot.jsx](src/world/Loot.jsx), models in [lootModels.jsx](src/world/lootModels.jsx), items in [data/loot.js](src/data/loot.js), ported from Lift-rock-for-treasure). Press E next to it (instant) to put it in the Bag (`BAG_MAX` 4, HUD 🎒 "0/4"). Regrown with the forest. Zones x2+ scale with luck (`LUCK_LOOT` in data/loot.js): more trees drop, up to 4 items per tree, higher rarity; x66 drops 4 Divine items from every tree. |
 
 ## Leaderboards Hall (east)
 
@@ -140,6 +139,10 @@ Component: [Landmarks.jsx](src/world/Landmarks.jsx) unless noted.
 | **Sword Display** | (−14.5, −16) | `SWORD_DISPLAY` | Pink pad with a floating crystal sword; label "750% Stronger than Best Chopper! / +17 Strength / 839". Built in SouthArea.jsx (`SwordDisplay`). |
 | **Treasure Sacks** | mostly behind the Sell Treasure Stall | `SACKS` in Landmarks.jsx | `[x, z, rotation, scale]` |
 | **Stumps** | around the stalls and training steps | `STUMPS` in Landmarks.jsx | `[x, z, scale]`; each is a small collider. |
+| **Lamp posts** | plaza, north approach (x ±7.5, z −7/−15/−21) and spawn square (z 8/14) | `LAMPS` in Landmarks.jsx | Fill the bare plaza; colliders. |
+| **Benches** | plaza, x ±5 at z −11/−18 and 11.5 | `BENCHES` in Landmarks.jsx | `[x, z, yaw]`; colliders. |
+| **Bushes** | lawn edges and the empty NE/SE lawn space | `BUSHES` in Landmarks.jsx | `[x, z, scale]`; colliders. |
+| **Flower beds** | scattered on the lawns | `FLOWERS` in Landmarks.jsx | `[x, z, count]`; decorative, no collider. |
 
 ## Shared building blocks
 
@@ -163,6 +166,11 @@ Component: [GameHud.jsx](src/components/GameHud.jsx). Styles: [gameHud.css](src/
 | **x2 Strength Offer** | right side | `Offer` (top 431) | ONLY 3 / x2 STRENGTH |
 | **OP Pet Offer** | lower right | `OpPet` / `.op` | Haloed pet (6), 1000% dragon (559) |
 | **Auto Chop Button** | left | `.autochop` | "Auto Collects" / AUTO CHOP |
-| **Menu Grid** | left, under Auto Chop | `MENU` array / `.tile` | Shop, Rebirth (0% badge), Index, Invite, Pets, Quests |
-| **Stats Panel** | bottom left | `Stats` / `.stat` | Wood 460, Backpack 0/3, Rebirths 0, Cash $232 |
+| **Menu Grid** | left, under Auto Chop | `MENU` array / `.tile` | Shop, Rebirth (% to next rebirth badge; opens the Rebirth Window), Index, Invite, Pets, Quests |
+| **Rebirth Window** | centre | [RebirthMenu.jsx](src/components/RebirthMenu.jsx) / `.rebirth-menu` | Strength / cash multiplier and level now → after, level progress bar, Rebirth + Skip (Robux), "resets Strength" warning. Logic in [rebirth.js](src/systems/rebirth.js), tunables `REBIRTH` in [economy.js](src/data/economy.js) |
+| **Index Window** | centre | [IndexMenu.jsx](src/components/IndexMenu.jsx) / `.index-menu` | Treasure Index: every loot item by rarity, 4 per row; every item has a tile with its rarity; collected ones show a spinning 3D model (a small orthographic canvas over the grid) and name, the rest a red "?" only. The grid scrolls. "Each discovered treasure grants x1.025 strength" + Current Bonus ([treasureIndex.js](src/systems/treasureIndex.js), `INDEX` in [economy.js](src/data/economy.js)) |
+| **Sell Treasure Window** | centre | [SellMenu.jsx](src/components/SellMenu.jsx) / `.sell-menu` | Opened by hold-E at the Sell Treasure stall ([sell.js](src/systems/sell.js)): bag total, Sell All, one row per item with Sell. Tunables `SELL` in [economy.js](src/data/economy.js) |
+| **Choppers Window** | centre | [ChoppersMenu.jsx](src/components/ChoppersMenu.jsx) / `.choppers-menu` | Opened by hold-E at the Choppers stall ([choppers.js](src/systems/choppers.js)): 28 axes from [choppers.js](src/data/choppers.js) (icons in public/ui/choppers/) with name, rarity, +Strength per swing, Equip / Equipped / cash and gem prices. The equipped axe sets base Strength per swing and its 3D model ([axeModels.js](src/systems/axeModels.js)) replaces the held axe |
+| **Auras Window** | centre | [AurasMenu.jsx](src/components/AurasMenu.jsx) / `.auras-menu` | Opened by hold-E at the Auras stall ([auras.js](src/systems/auras.js)): equipped aura, Auto Spin / Spin ($100K) / Lucky Roll, Mythic and Secret pity. Aura odds in [auras.js](src/data/auras.js), tunables `AURA` in [economy.js](src/data/economy.js) |
+| **Stats Panel** | bottom left | `Stats` / `.stat` | Wood 460, Backpack 0/3, Rebirths (live), Cash (live) |
 | **Status Line** | bottom-right corner | [Hud.jsx](src/components/Hud.jsx) / `.hud` | Player name and online/offline status (from the base project) |

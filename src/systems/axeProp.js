@@ -8,8 +8,8 @@
 //           (the left arm hangs free)
 //   move  - arm held back, axe trailing in the fist
 //   swing - handle straight out of the fist for the overhead chop
-import { BoxGeometry, CylinderGeometry, Group, Matrix4, Mesh, MeshStandardMaterial, Quaternion, SphereGeometry, Vector3 } from 'three'
-import { MATERIAL_PBR } from '../data/materials.js'
+import { Group, Matrix4, Quaternion, Vector3 } from 'three'
+import { buildAxe } from './axeModels.js'
 
 const SWING_TILT = 0.12
 const FREE_ARM_BOOST = 1.9 // the empty arm swings this much wider than the stock walk cycle
@@ -67,54 +67,23 @@ const _rollL = new Quaternion()
 const _mountInv = new Matrix4()
 const _shoulder = new Vector3()
 
-let shared = null
-function assets() {
-  return (shared ||= {
-    geo: {
-      handle: new CylinderGeometry(0.13, 0.13, 3.5, 10),
-      grip: new CylinderGeometry(0.17, 0.17, 1.1, 10),
-      pommel: new SphereGeometry(0.24, 10, 8),
-      socket: new BoxGeometry(0.42, 0.7, 0.42),
-      blade: new BoxGeometry(0.2, 1.25, 0.95),
-    },
-    mat: {
-      wood: new MeshStandardMaterial({ ...MATERIAL_PBR.PLAYER, color: '#e8742a' }),
-      grip: new MeshStandardMaterial({ ...MATERIAL_PBR.PLAYER, color: '#d6303a' }),
-      steel: new MeshStandardMaterial({ ...MATERIAL_PBR.PLAYER, color: '#4f7fc4', metalness: 0.4 }),
-      dark: new MeshStandardMaterial({ ...MATERIAL_PBR.PLAYER, color: '#2c3e5c' }),
-    },
-  })
-}
-
-function mesh(geo, material, x, y, z) {
-  const m = new Mesh(geo, material)
-  m.position.set(x, y, z)
-  m.castShadow = true
-  return m
-}
-
-// Returns { pivot, arm, offset } or null when the rig lacks the bones.
-export function attachAxe(nodes) {
+// Returns { pivot, arm, offset, ... } or null when the rig lacks the bones.
+// `getModel` (optional) returns the equipped chopper id; the model is rebuilt
+// whenever it changes (see updateAxe). Without it the starter axe is used.
+export function attachAxe(nodes, getModel) {
   const arm = nodes && nodes.ArmR1
   const offset = nodes && nodes.ArmR_Offset
   const mount = nodes && nodes.Spine2
   if (!arm || !offset || !mount) return null
-  const { geo, mat } = assets()
-
-  const axe = new Group()
-  axe.name = 'axe'
-  axe.add(mesh(geo.handle, mat.wood, 0, -1.25, 0))
-  axe.add(mesh(geo.grip, mat.grip, 0, -0.05, 0))
-  axe.add(mesh(geo.pommel, mat.wood, 0, 0.55, 0))
-  axe.add(mesh(geo.socket, mat.dark, 0, -2.85, 0))
-  axe.add(mesh(geo.blade, mat.steel, 0, -2.9, 0.62))
+  const model = getModel ? getModel() : null
+  const axe = buildAxe(model)
 
   const pivot = new Group()
   pivot.name = 'axe_pivot'
   pivot.add(axe)
   mount.add(pivot)
   const armL = nodes.ArmL1 || null
-  return { pivot, arm, offset, mount, armL, bindL: armL ? armL.quaternion.clone() : null, bind: arm.quaternion.clone() }
+  return { pivot, axe, model, getModel, arm, offset, mount, armL, bindL: armL ? armL.quaternion.clone() : null, bind: arm.quaternion.clone() }
 }
 
 export function detachAxe(prop) {
@@ -142,6 +111,13 @@ function poseFreeArm(prop, rot, weight) {
 export function updateAxe(prop, swingW, moveW = 0, phase = 0, side = 1) {
   if (!prop) return
   const { pivot, arm, mount } = prop
+  const model = prop.getModel ? prop.getModel() : null
+  if (model !== prop.model) {
+    prop.axe.removeFromParent()
+    prop.axe = buildAxe(model)
+    prop.model = model
+    pivot.add(prop.axe)
+  }
   const back = moveW * (1 - swingW)
   const idle = (1 - moveW) * (1 - swingW)
 

@@ -94,7 +94,7 @@ export default function Player() {
   useEffect(() => {
     gaitRef.current = null
     if (!avatar) return
-    gaitRef.current = makeGait({ root: avatar, nodes: avatar.nodes || {}, clips: avatar.animations || [] })
+    gaitRef.current = makeGait({ root: avatar, nodes: avatar.nodes || {}, clips: avatar.animations || [], axeModel: () => usePlayerData.getState().chopper })
 
     return () => {
       disposeGait(gaitRef.current)

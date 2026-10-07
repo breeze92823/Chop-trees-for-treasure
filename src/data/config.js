@@ -3,6 +3,8 @@
 // feel) is a constant here; systems/ and components/ read it and hold no
 // theme values of their own. Bloxity SDK constants live in data/bloxity.js.
 
+import { FOREST_END_Z } from '../world/layout.js'
+
 // --- Identity -------------------------------------------------------------
 export const GAME_SLUG = 'chop-trees-for-treasure' // slug registered on bloxity.io
 export const GAME_TITLE = 'Chop Trees for Treasure'
@@ -12,7 +14,7 @@ export const GROUND_Y = 0
 export const GROUT = 0.05 // tile material grout width (materials/tile.js)
 // Walkable rectangle; playerMovement clamps to it (the "invisible wall").
 // The hub basin (see world/layout.js); the terraced cliffs sit just outside it.
-export const WORLD_BOUNDS = { minX: -34.5, maxX: 54, minZ: -114, maxZ: 28 }
+export const WORLD_BOUNDS = { minX: -34.5, maxX: 54, minZ: FOREST_END_Z, maxZ: 28 }
 export const SPAWN = { x: 0, y: 0.3, z: 6 }
 export const SPAWN_FACING = Math.PI // yaw the character faces on spawn (PI = toward -Z)
 

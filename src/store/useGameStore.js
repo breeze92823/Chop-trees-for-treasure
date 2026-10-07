@@ -13,5 +13,12 @@ export const useGameStore = create(() => ({
   autoHatch: false, // Auto button: keep hatching while the window stays open
   autoChop: false, // Auto Chop button: swing whenever a tree is in range, no click needed (systems/chop.js)
   petsMenu: false, // Pets inventory window (components/PetsMenu.jsx)
+  worldLoot: [], // loot lying where trees fell: { id, name, rarity, x, y, z } (systems/loot.js)
   indexMenu: false, // pet Index window (components/IndexMenu.jsx)
+  rebirthMenu: false, // Rebirth window (components/RebirthMenu.jsx)
+  aurasMenu: false, // Auras window, opened by hold-E at the stall (systems/auras.js)
+  aurasIndex: false, // Auras Index page of the Auras window (the "i" button)
+  autoSpin: false, // Auto Spin toggle in the Auras window
+  choppersMenu: false, // Choppers window, opened by hold-E at the stall (systems/choppers.js)
+  sellMenu: false, // Sell Treasure window, opened by hold-E at the stall (systems/sell.js)
 }))

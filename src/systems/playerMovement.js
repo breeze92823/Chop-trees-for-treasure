@@ -91,7 +91,17 @@ export function step(dt) {
 
   // Standing inside a solid (chopping): its top is not a floor, or the player
   // would be lifted onto the tree.
-  const groundY = terrainHeightAt(p.x, p.z, p.y, stuckIn ? inside : null)
+  let groundY = terrainHeightAt(p.x, p.z, p.y, stuckIn ? inside : null)
+  // Never stand on a tree: if the feet would land on one, undo the move.
+  const support = groundY > p.y - 0.01 ? colliderAt(p.x, p.z, p.y) : null
+  if (support?.tree && !stuckIn) {
+    p.x = prevX
+    p.z = prevZ
+    player.velocity.x = 0
+    player.velocity.z = 0
+    const back = colliderAt(p.x, p.z, p.y)
+    groundY = terrainHeightAt(p.x, p.z, p.y, back?.tree ? back : null)
+  }
   if (p.y <= groundY) {
     p.y = groundY
     if (player.velocity.y < 0) player.velocity.y = 0

@@ -84,7 +84,7 @@ export function TreeBars() {
     lastVersion.current = treeVersion.v
     const a = fill.array
     // Only damaged, still-standing trees show a bar (-1 = hidden in the shader).
-    for (let i = 0; i < a.length; i++) a[i] = treePhase[i] === ALIVE && treeHp[i] < TREE.hp ? treeHp[i] / TREE.hp : -1
+    for (let i = 0; i < a.length; i++) a[i] = treePhase[i] === ALIVE && treeHp[i] < trees[i].hp ? treeHp[i] / trees[i].hp : -1
     fill.needsUpdate = true
   })
 
@@ -119,7 +119,7 @@ function ghost(base) {
 
 export function FallingTrees() {
   const groups = useRef([])
-  const slots = useMemo(() => Array.from({ length: MAX_FALLING }, () => ({ trunk: ghost(MAT.trunk), leaves: ghost(MAT.leaves) })), [])
+  const slots = useMemo(() => Array.from({ length: MAX_FALLING }, () => ({ trunk: ghost(MAT.trunk), leaves: ghost(MAT.leavesTint) })), [])
   useEffect(() => () => slots.forEach((s) => {
     s.trunk.dispose()
     s.leaves.dispose()
@@ -140,6 +140,7 @@ export function FallingTrees() {
       g.position.set(tree.x, tree.y + 0.5 * tree.s * u * u, tree.z)
       g.scale.setScalar(tree.s)
       g.quaternion.setFromAxisAngle(_axis.set(f.dz, 0, -f.dx), FALL_ANGLE * u * u)
+      slots[i].leaves.color.set(tree.color)
       const opacity = Math.max(0, 1 - t / FADE_S)
       slots[i].trunk.opacity = opacity
       slots[i].leaves.opacity = opacity
