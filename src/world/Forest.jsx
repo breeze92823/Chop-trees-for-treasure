@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { BoxGeometry } from 'three'
 import { MAT, surface } from '../materials/world.js'
-import { seededRandom } from '../utils/random.js'
-import { BASIN, FOREST } from './layout.js'
+import { FOREST } from './layout.js'
+import { FOREST_TREES } from './forestTrees.js'
 import { Slab } from './Ground.jsx'
 import { Instances, Label, useColliders } from './common.jsx'
 
@@ -12,23 +12,10 @@ import { Instances, Label, useColliders } from './common.jsx'
 const unitBox = new BoxGeometry(1, 1, 1)
 const waterTile = surface('#3aa6ee', { top2: '#3196e2', checker: 2, studAmt: 0.5, roughness: 0.25 })
 
-function buildForest() {
-  const rand = seededRandom(11)
-  const trees = []
-  for (const zone of FOREST.zones) {
-    for (let z = zone.z0 - 2.2; z > zone.z1 + 1.5; z -= FOREST.spacing) {
-      for (let x = FOREST.x0 + 2; x < FOREST.x1 - 1.5; x += FOREST.spacing) {
-        trees.push({ x, z, y: zone.y, s: 0.92 + rand() * 0.16 })
-      }
-    }
-  }
-  return trees
-}
-
 export default function Forest() {
-  const trees = useMemo(buildForest, [])
+  const trees = FOREST_TREES
   useColliders(trees.map((t) => ({ x0: t.x - 0.5, x1: t.x + 0.5, z0: t.z - 0.5, z1: t.z + 0.5, top: 30 })).concat(
-    FOREST.zones.filter((z) => z.y > 0).map((z) => ({ x0: BASIN.minX, x1: BASIN.maxX, z0: z.z1, z1: z.z0, top: z.y })),
+    FOREST.zones.filter((z) => z.y > 0).map((z) => ({ x0: FOREST.x0, x1: FOREST.x1, z0: z.z1, z1: z.z0, top: z.y })),
   ))
 
   const { trunks, roots, canopy } = useMemo(() => {
@@ -51,11 +38,11 @@ export default function Forest() {
     <group>
       {FOREST.zones.map((zone) => (
         <group key={zone.label}>
-          <Slab x0={BASIN.minX} x1={BASIN.maxX} z0={zone.z1} z1={zone.z0} top={zone.y + 0.04} y0={-0.2} material={MAT.forestFloor} />
-          <Label lines={[{ text: zone.label, icon: 'clover', size: 100, colors: '#ffffff', stroke: '#1b1b1f' }]} position={[(FOREST.x0 + FOREST.x1) / 2 - 8, zone.y + 8, zone.z0 - 1]} height={1.6} />
+          <Slab x0={FOREST.x0} x1={FOREST.x1} z0={zone.z1} z1={zone.z0} top={zone.y + 0.04} y0={-0.2} material={MAT.forestFloor} />
+          <Label lines={[{ text: zone.label, icon: 'clover', size: 100, colors: '#ffffff', stroke: '#1b1b1f' }]} position={[(FOREST.x0 + FOREST.x1) / 2,zone.y + 8, zone.z0 - 1]} height={1.6} />
         </group>
       ))}
-      <Slab x0={BASIN.minX} x1={BASIN.maxX} z0={FOREST.river.z1} z1={FOREST.river.z0} top={0.06} y0={-0.2} material={waterTile} />
+      <Slab x0={FOREST.x0} x1={FOREST.x1} z0={FOREST.river.z1} z1={FOREST.river.z0} top={0.06} y0={-0.2} material={waterTile} />
       <Instances geometry={unitBox} material={MAT.trunk} items={trunks} />
       <Instances geometry={unitBox} material={MAT.trunk} items={roots} />
       <Instances geometry={unitBox} material={MAT.leaves} items={canopy} />

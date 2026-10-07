@@ -13,6 +13,8 @@ import Player from './components/Player.jsx'
 import RemotePlayers from './components/RemotePlayers.jsx'
 import LoadingScreen from './components/LoadingScreen.jsx'
 import Hud from './components/Hud.jsx'
+import GameHud from './components/GameHud.jsx'
+import InteractPrompt from './components/InteractPrompt.jsx'
 
 // Rendered last inside the Suspense boundary, so it only mounts once every
 // suspending resource in the scene has resolved — the right moment to tell the
@@ -60,7 +62,9 @@ export default function App() {
         <Player />
         <RemotePlayers />
       </Canvas>
+      <GameHud />
       <Hud />
+      <InteractPrompt />
       <LoadingScreen sceneReady={sceneReady} />
     </>
   )

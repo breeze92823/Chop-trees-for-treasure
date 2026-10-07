@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { CylinderGeometry, DodecahedronGeometry, IcosahedronGeometry, MeshStandardMaterial } from 'three'
 import { MAT } from '../materials/world.js'
 import { seededRandom } from '../utils/random.js'
-import { BASIN, CLIFF } from './layout.js'
+import { BASIN, CLIFF, CORRIDOR, HUB } from './layout.js'
 import { Instances, useColliders } from './common.jsx'
 
 // Terraced cliffs ringing the hub: each tier is a band of boxes a step higher
@@ -20,13 +20,22 @@ function buildTerraces() {
   for (let t = 0; t < CLIFF.tiers; t++) {
     const e = t * CLIFF.tierDepth
     const top = (t + 1) * CLIFF.tierHeight
-    const R = { minX: BASIN.minX - e, maxX: BASIN.maxX + e, minZ: BASIN.minZ - e, maxZ: BASIN.maxZ + e }
+    const H = { minX: HUB.minX - e, maxX: HUB.maxX + e, minZ: HUB.minZ - e, maxZ: HUB.maxZ + e }
+    const cx0 = CORRIDOR.x0 - e
+    const cx1 = CORRIDOR.x1 + e
+    const endZ = BASIN.minZ - e
     // Each side: the run axis, its extent, the face position and outward sign.
+    // The hub's north wall is split by the corridor opening, which gets its own
+    // two side walls and an end cap.
     const sides = [
-      { axis: 'x', a0: R.minX - OUT, a1: R.maxX + OUT, face: R.minZ, out: -1 }, // north
-      { axis: 'x', a0: R.minX - OUT, a1: R.maxX + OUT, face: R.maxZ, out: 1 }, // south
-      { axis: 'z', a0: R.minZ, a1: R.maxZ, face: R.minX, out: -1 }, // west
-      { axis: 'z', a0: R.minZ, a1: R.maxZ, face: R.maxX, out: 1 }, // east
+      { axis: 'x', a0: H.minX - OUT, a1: cx0 - 2, face: H.minZ, out: -1 }, // hub north, west of corridor
+      { axis: 'x', a0: cx1 + 2, a1: H.maxX + OUT, face: H.minZ, out: -1 }, // hub north, east of corridor
+      { axis: 'x', a0: H.minX - OUT, a1: H.maxX + OUT, face: H.maxZ, out: 1 }, // hub south
+      { axis: 'z', a0: H.minZ, a1: H.maxZ, face: H.minX, out: -1 }, // hub west
+      { axis: 'z', a0: H.minZ, a1: H.maxZ, face: H.maxX, out: 1 }, // hub east
+      { axis: 'z', a0: endZ, a1: H.minZ, face: cx0, out: -1 }, // corridor west wall
+      { axis: 'z', a0: endZ, a1: H.minZ, face: cx1, out: 1 }, // corridor east wall
+      { axis: 'x', a0: cx0 - OUT, a1: cx1 + OUT, face: endZ, out: -1 }, // corridor end cap
     ]
     for (const s of sides) {
       let a = s.a0
@@ -59,7 +68,9 @@ function buildTerraces() {
 }
 
 // Skip decorations that would land inside the walkable basin.
-const inside = (x, z) => x > BASIN.minX && x < BASIN.maxX && z > BASIN.minZ && z < BASIN.maxZ
+const inside = (x, z) =>
+  (x > HUB.minX && x < HUB.maxX && z > HUB.minZ && z < HUB.maxZ) ||
+  (x > CORRIDOR.x0 && x < CORRIDOR.x1 && z > BASIN.minZ && z < HUB.minZ)
 
 const trunkGeo = new CylinderGeometry(0.22, 0.34, 2.6, 6)
 trunkGeo.translate(0, 1.3, 0)

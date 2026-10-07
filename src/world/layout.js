@@ -14,7 +14,12 @@
 // Components read these numbers for both the meshes and their colliders.
 
 // Inner edge of the terraced cliffs that ring the basin.
-export const BASIN = { minX: -34.5, maxX: 54, minZ: -114, maxZ: 28 }
+// The hub is a wide basin; the forest is a narrow corridor leading north out of
+// it, walled in by the same terraced cliffs (see Cliffs.jsx).
+export const HUB = { minX: -34.5, maxX: 54, minZ: -24, maxZ: 28 }
+export const CORRIDOR = { x0: -15, x1: 15 }
+// Bounding box of hub + corridor.
+export const BASIN = { minX: HUB.minX, maxX: HUB.maxX, minZ: -114, maxZ: HUB.maxZ }
 export const CLIFF = { tiers: 3, tierHeight: 3.5, tierDepth: 6 }
 
 // Grey plaza slab and the four raised green lawns that turn it into a plus.
@@ -62,13 +67,13 @@ export const STRENGTH_TREES = [
 
 // Choppable forest, split into luck zones by a river and a step.
 export const FOREST = {
-  x0: -31,
-  x1: 50,
+  x0: CORRIDOR.x0,
+  x1: CORRIDOR.x1,
   spacing: 4.4,
   zones: [
-    { label: 'x1 Luck', z0: -27, z1: -58, y: 0 },
-    { label: 'x2 Luck', z0: -70, z1: -90, y: 0 },
-    { label: 'x3 Luck', z0: -93, z1: -112, y: 0.6 },
+    { label: 'x1 Luck', mult: 1, z0: -27, z1: -58, y: 0 },
+    { label: 'x2 Luck', mult: 2, z0: -70, z1: -90, y: 0 },
+    { label: 'x3 Luck', mult: 3, z0: -93, z1: -112, y: 0.6 },
   ],
   river: { z0: -61, z1: -67 },
 }

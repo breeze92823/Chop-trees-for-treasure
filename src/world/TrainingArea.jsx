@@ -102,8 +102,11 @@ function darken(hex, f) {
   return '#' + new Color(hex).multiplyScalar(f).getHexString()
 }
 
+// Pads sit just above the aisle surface so they never share a plane with it.
+const PAD_LIFT = 0.08
+
 function TreePad({ x, z, tier, cost, cur, mult, pad, kind }, i) {
-  const y = tier === 1 ? TRAIN.tier1.h : TRAIN.tier2.h
+  const y = (tier === 1 ? TRAIN.tier1.h : TRAIN.tier2.h) + PAD_LIFT
   const price = cost === 'free' ? 'FREE' : String(cost)
   return (
     <group key={i} position={[x, y, z]}>
@@ -142,7 +145,7 @@ export default function TrainingArea() {
     ...postZ.map((pz) => ({ x0: arch.x - 0.8, x1: arch.x + 0.8, z0: pz - 0.8, z1: pz + 0.8, top: 30 })),
     // tree trunks block, pads are walkable
     ...STRENGTH_TREES.map((t) => ({ x0: t.x - 0.35, x1: t.x + 0.35, z0: t.z - 0.35, z1: t.z + 0.35, top: 30 })),
-    ...STRENGTH_TREES.map((t) => ({ x0: t.x - 1.7, x1: t.x + 1.7, z0: t.z - 1.7, z1: t.z + 1.7, top: (t.tier === 1 ? tier1.h : tier2.h) + 0.22 })),
+    ...STRENGTH_TREES.map((t) => ({ x0: t.x - 1.7, x1: t.x + 1.7, z0: t.z - 1.7, z1: t.z + 1.7, top: (t.tier === 1 ? tier1.h : tier2.h) + PAD_LIFT + 0.22 })),
     { x0: tier2.x0 - 0.6, x1: tier2.x0, z0, z1, top: 30 },
   ])
 
@@ -150,12 +153,13 @@ export default function TrainingArea() {
     <group>
       <Slab x0={tier1.x0} x1={tier1.x1} z0={z0} z1={z1} top={tier1.h} y0={-0.2} material={MAT.train} cast />
       <Slab x0={tier2.x0} x1={tier2.x1} z0={z0} z1={z1} top={tier2.h} y0={-0.2} material={MAT.train} cast />
-      {/* grey stair aisle */}
-      <Slab x0={tier1.x0} x1={tier1.x1} z0={-aisle} z1={aisle} top={tier1.h + 0.02} y0={tier1.h - 0.3} material={MAT.path} />
-      <Slab x0={tier2.x0} x1={tier2.x1} z0={-aisle} z1={aisle} top={tier2.h + 0.02} y0={tier2.h - 0.3} material={MAT.path} />
-      {/* step lips */}
-      <Slab x0={tier1.x1 - 0.25} x1={tier1.x1} z0={z0} z1={z1} top={tier1.h + 0.03} y0={0} material={MAT.curb} />
-      <Slab x0={tier2.x1 - 0.25} x1={tier2.x1} z0={z0} z1={z1} top={tier2.h + 0.03} y0={tier1.h} material={MAT.curb} />
+      {/* grey stair aisle: sits clear above the tier and the step lips, and
+          pokes 2cm past the tier edge so no faces are coplanar */}
+      <Slab x0={tier1.x0} x1={tier1.x1 + 0.02} z0={-aisle} z1={aisle} top={tier1.h + 0.06} y0={tier1.h - 0.3} material={MAT.path} />
+      <Slab x0={tier2.x0} x1={tier2.x1 + 0.02} z0={-aisle} z1={aisle} top={tier2.h + 0.06} y0={tier2.h - 0.3} material={MAT.path} />
+      {/* step lips (slightly proud of the tier edge to avoid coplanar sides) */}
+      <Slab x0={tier1.x1 - 0.25} x1={tier1.x1 + 0.01} z0={z0 - 0.01} z1={z1 + 0.01} top={tier1.h + 0.03} y0={0} material={MAT.curb} />
+      <Slab x0={tier2.x1 - 0.25} x1={tier2.x1 + 0.01} z0={z0 - 0.01} z1={z1 + 0.01} top={tier2.h + 0.03} y0={tier1.h} material={MAT.curb} />
       {/* orange back wall */}
       <Slab x0={tier2.x0 - 0.6} x1={tier2.x0} z0={z0} z1={z1} top={7} y0={0} material={MAT.trainWall} cast />
 

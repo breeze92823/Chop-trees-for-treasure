@@ -8,10 +8,21 @@ import { applyProportions, attachEquippedAccessories } from '../systems/avatarLo
 import { buildDefaultCharacter, loadBaseCharacter } from '../systems/defaultCharacter.js'
 import { useGameStore } from '../store/useGameStore.js'
 import { makeGait, updateGait, disposeGait } from '../systems/avatarAnim.js'
+import { usePlayerData } from '../store/usePlayerData.js'
+import { equippedPetIds } from '../systems/pets.js'
+import PetFollowers from './PetFollowers.jsx'
 
 const _up = new Vector3(0, 1, 0)
 const _targetQuat = new Quaternion()
 const TURN_RATE = 0.001 // base of 1 - TURN_RATE^delta; smaller = snappier turn
+const petAnchor = { x: 0, y: 0, z: 0, yaw: 0 }
+const localAnchor = () => {
+  petAnchor.x = player.position.x
+  petAnchor.y = player.position.y
+  petAnchor.z = player.position.z
+  petAnchor.yaw = player.facing
+  return petAnchor
+}
 
 // The player is always the game's own character (systems/defaultCharacter.js)
 // — never the raw Bloxity avatar. A signed-in player's equipped Bloxity
@@ -76,6 +87,7 @@ export default function Player() {
   const ref = useRef()
   const avatar = useBloxityAvatar()
   const gaitRef = useRef(null)
+  const pets = usePlayerData((s) => equippedPetIds(s).join(','))
 
   // Rebuilt per loaded avatar — the gait's cached bind-pose quaternions
   // (see avatarAnim.js) belong to one specific rig instance.
@@ -105,8 +117,11 @@ export default function Player() {
   })
 
   return (
-    <group ref={ref}>
-      <primitive object={avatar} />
-    </group>
+    <>
+      <group ref={ref}>
+        <primitive object={avatar} />
+      </group>
+      <PetFollowers ids={pets ? pets.split(',') : []} anchor={localAnchor} />
+    </>
   )
 }

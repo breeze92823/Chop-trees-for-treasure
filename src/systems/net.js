@@ -26,6 +26,9 @@ import {
   subscribeAuth,
 } from './bloxity.js'
 import { DEV_MODE } from '../data/bloxity.js'
+import { usePlayerData } from '../store/usePlayerData.js'
+import { equippedPetIds } from './pets.js'
+import { pushAnnouncement } from './announce.js'
 import { GAME_SLUG, NET } from '../data/config.js'
 
 // Two Legion channels (`dev` branch -> dev, `main` -> prod), each with its own
@@ -46,6 +49,7 @@ let attempt = 0
 let lastPose = ''
 let lastSig = ''
 let joinedAs = ''
+let lastPets = null
 
 // Dev builds and guests have no Bloxity id; a per-browser id keeps one stable.
 function localGuestId() {
@@ -111,6 +115,35 @@ function sendPose() {
   room.send('pose', msg)
 }
 
+// Equipped pets as comma-joined data/eggs.js ids, so every client can draw
+// them following this player (components/PetFollowers.jsx).
+function sendPets() {
+  if (!room) return
+  const pets = equippedPetIds().join(',')
+  if (pets === lastPets) return
+  lastPets = pets
+  room.send('setPets', { pets })
+}
+
+// Our own epic+ hatch: shown here at once, and relayed to everyone else.
+export function announceHatch(petIds) {
+  for (const id of petIds) pushAnnouncement(getDisplayName(), id)
+  room?.send('hatch', { pets: petIds })
+}
+
+// True while one of our Bloxity friends is in this server (the egg window's
+// "Boosted Odds for Playing with Friends!").
+export function friendInServer() {
+  if (!authState.friends.length || !remotes.size) return false
+  const names = new Set()
+  for (const f of authState.friends) {
+    if (f?.username) names.add(f.username)
+    if (f?.displayName) names.add(f.displayName)
+  }
+  for (const p of remotes.values()) if (p.username && names.has(p.username)) return true
+  return false
+}
+
 // Mirrors room.state.players into remotes / useRemoteStore. Polled (a few Hz)
 // rather than callback-driven so it needs nothing beyond the plain state
 // objects the SDK keeps live.
@@ -146,8 +179,14 @@ async function connect() {
     room = r
     joinedAs = currentUserId()
     lastPose = ''
+    lastPets = null
     setStatus('online')
     sendPose()
+    sendPets()
+    r.onMessage('hatched', (msg) => {
+      if (!Array.isArray(msg?.pets)) return
+      for (const id of msg.pets) pushAnnouncement(msg.username, id)
+    })
     r.onLeave(() => {
       if (room === r) room = null
       remotes.clear()
@@ -174,6 +213,7 @@ export function startNet() {
   started = true
   setInterval(sendPose, 1000 / NET.sendHz)
   setInterval(syncRoster, ROSTER_MS)
+  usePlayerData.subscribe(sendPets)
 
   // Wait for Bloxity auth to settle so the real account id (not a guest id) is used.
   let begun = false

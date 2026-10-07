@@ -8,4 +8,9 @@ export const useGameStore = create(() => ({
   // game runs single-player (and keeps retrying quietly); 'online' = synced.
   netStatus: 'connecting',
   avatarLoaded: false, // player character (incl. Bloxity accessories) finished loading; gates the loading screen
+  eggMenu: null, // egg kind whose hatch window is open (systems/eggs.js), null when closed
+  hatch: null, // { egg, pets, id } while the hatch animation plays (systems/hatch.js)
+  autoHatch: false, // Auto button: keep hatching while the window stays open
+  petsMenu: false, // Pets inventory window (components/PetsMenu.jsx)
+  indexMenu: false, // pet Index window (components/IndexMenu.jsx)
 }))

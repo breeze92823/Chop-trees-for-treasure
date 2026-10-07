@@ -1,0 +1,18 @@
+# Chop Trees for Treasure
+
+3D game. Vite + React 18 + @react-three/fiber 8 + three 0.171 + zustand + @colyseus/sdk, plain JS/JSX. Same architecture as ../Tnt-Mining (extracted from Lift-rock-for-treasure); `README.md` has the per-concern table of files and theme knobs.
+
+- `npm run dev` / `npm run build` / `npm run build:dev`; `.env.example` documents `VITE_DEV_MODE` (skips the Bloxity SDK/CDN) and `VITE_SERVER_URL_DEV`/`_MAIN`.
+- `systems/` is framework-free (no React) and stepped per frame through `systems/loop.js` (`addSystem`). All Bloxity SDK calls go through `systems/bloxity.js` (constants in `data/bloxity.js`, slug `GAME_SLUG` in `data/config.js`) and must never throw.
+- World layout lives in `world/layout.js` (metres, +X east, −Z north, plaza centre (0, 0), spawn (0, 6)): plaza, lawns, four stalls, Train Strength tiers (W), Leaderboards (E), eggs/Forge/Craft (S), river and x1/x2/x3 Luck forest zones (N), ringed by cliff terraces. Meshes and colliders read the same numbers, so change them there only.
+- Collision is axis-aligned boxes in `systems/terrainHeight.js` (`addCollider`, returns a remover), the single floor-height lookup for player + camera boom. Add a collider whenever you add a solid mesh.
+- `LANDMARKS.md` names every place/prop/HUD part with coordinates and code location; use those names and keep it updated when adding or moving something.
+- Chopping: `systems/chop.js` (hold mouse next to a tree) over `world/forestTrees.js` (shared by `Forest.jsx` drawing and chop targets); tunables in `data/economy.js` `CHOP`; wood gain = `CHOP.wood` × zone `mult` × `woodMultiplier()` (`systems/pets.js`). Swing pose + `systems/axeProp.js` (axe attached to the avatar arm, lifecycle owned by `avatarAnim.js`); `components/ChopFx.jsx` shows the "+wood" pop.
+- Eggs/pets: `data/eggs.js` `EGG_SHOP` (odds, costs, pet `power`/`id`) keyed by egg `kind` in `layout.js` `EGGS.list`; `systems/eggs.js` (hold-E prompt → `eggMenu`), `systems/hatch.js` (pay, roll, `hatch` state, auto-hatch), `systems/pets.js` (equip slots, boosts), UI `EggMenu`/`HatchOverlay`/`PetsMenu`/`IndexMenu`, in-world `PetFollowers.jsx`, server-wide `systems/announce.js` + `Announcements.jsx`.
+- Player progress (wood/robux, pets, equipped, discovered) is `store/usePlayerData.js`, saved to localStorage (`chop-trees:save:v1`) — not server-side yet. `store/useGameStore.js` is cross-cutting UI/loading state only; `store/useRemoteStore.js` holds other players.
+- Hold-E interaction: `systems/interact.js` registry (`setInteractTarget`/`clearInteractTarget`) + `interactHold.js` gate, `actionResult.js` (`showActionResult`), synthesized/preloaded sounds in `sfx.js` (`data/sfx.js`, `public/audio/`), HUD `InteractPrompt.jsx`.
+- HUD: `components/Hud.jsx` + `GameHud.jsx` with shared parts in `hudParts.jsx`; styles in `styles/gameHud.css` and `styles/interact.css`. Numbers via `utils/format.js` `formatNumber`.
+- Multiplayer: `systems/net.js` is the only module that talks to the Colyseus server (`../Chop-trees-for-treasure-backend`); it relays pose (`NET.sendHz`), avatar and hatch announcements, and keeps retrying offline (a missing server leaves the game solo; never throw). `components/RemotePlayers.jsx` draws others with the same avatar/gait code as `Player.jsx`.
+- Player is always the game's own character (`public/avatars/player.glb`, `avatarLoader.js`, `defaultCharacter.js`, `avatarAnim.js`) with the equipped Bloxity items attached. Camera: `cameraOrbit.js`, `cameraCollision.js`, `cameraShake.js` (`addTrauma`/`addKick`).
+- Signs, labels, leaderboards are canvas textures (`world/signs.js`, `utils/labels.js`). World-space tile shader in `materials/tile.js`; materials in `materials/world.js` (`MAT`).
+- Git: work on `dev`, main branch is `main`.

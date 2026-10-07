@@ -19,6 +19,7 @@
 // leaves the avatar static.
 import * as THREE from 'three'
 import { GAIT } from '../data/bloxity.js'
+import { attachAxe, detachAxe, updateAxe } from './axeProp.js'
 
 // phase offset per limb: legs are half a cycle apart; each arm is
 // anti-phase to the leg on its own side (contralateral swing).
@@ -63,6 +64,7 @@ export function makeGait(built) {
   gait.arms = ['ArmL1', 'ArmR1']
     .filter((n) => nodes0[n])
     .map((n) => ({ bone: nodes0[n], bind: nodes0[n].quaternion.clone() }))
+  gait.axe = attachAxe(nodes0)
 
   // --- Path 1: an embedded clip ------------------------------------------
   const run = (built.clips || []).find((c) => GAIT.runClip.test(c.name))
@@ -143,6 +145,7 @@ export function updateGait(gait, dt, speed01, grounded = true, pose = null) {
   if (!gait || dt <= 0) return
   tickGait(gait, dt, speed01, grounded)
   applyPoses(gait, dt, pose)
+  updateAxe(gait.axe, gait.poseW.swing || 0, gait.amp, gait.phase)
 }
 
 function tickGait(gait, dt, speed01, grounded) {
@@ -227,6 +230,7 @@ function tickGait(gait, dt, speed01, grounded) {
 // down, while the nodes are still live.
 export function disposeGait(gait) {
   if (!gait) return
+  detachAxe(gait.axe)
   if (gait.mixer) {
     gait.mixer.stopAllAction()
     gait.mixer.uncacheRoot(gait.built.root)
