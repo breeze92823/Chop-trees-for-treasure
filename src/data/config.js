@@ -42,7 +42,7 @@ export const COLORS = {
   train2: '#eb9a2c',
   board: '#7d45e6', // Leaderboards purple
   board2: '#6c37d4',
-  horizon: '#cdeef6', // fog + clear colour; matches the bottom of the sky dome
+  horizon: '#f7d6a8', // fog + clear colour; matches the bottom of the sky dome (5 PM)
 }
 
 // Default (signed-out / fallback) character look.
@@ -50,12 +50,14 @@ export const CHARACTER_COLORS = { skin: '#f2c79a', suit: '#2f9e8f', hair: '#5a3a
 
 // --- Lighting (components/Lighting.jsx) ----------------------------------------
 export const LIGHT = {
-  sun: { color: '#fff1d6', intensity: 2.3, offset: [-55, 75, 30] }, // offset from the world centre
-  hemisphere: { sky: '#e6f7ff', ground: '#6f7f4a', intensity: 1.1 },
-  ambient: 0.35,
+  sun: { color: '#ffc27a', intensity: 2.5, offset: [-65, 42, 30] }, // golden late-afternoon sun
+  hemisphere: { sky: '#cfe3ff', ground: '#8a7048', intensity: 1.0 },
+  ambient: 0.3,
   shadowMapSize: 4096,
 }
-export const FOG = { near: 170, far: 380 }
+export const FOG = { near: 120, far: 340 }
+// Street lamps (world/Lamps.jsx): only the `pool` nearest to the player cast real light.
+export const LAMP = { color: '#ffc46b', intensity: 12, distance: 20, pool: 8, height: 4.2 }
 
 // --- Camera (systems/cameraOrbit.js) ---------------------------------------------
 export const CAMERA = {

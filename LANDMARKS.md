@@ -140,6 +140,7 @@ Component: [Landmarks.jsx](src/world/Landmarks.jsx) unless noted.
 | **Treasure Sacks** | mostly behind the Sell Treasure Stall | `SACKS` in Landmarks.jsx | `[x, z, rotation, scale]` |
 | **Stumps** | around the stalls and training steps | `STUMPS` in Landmarks.jsx | `[x, z, scale]`; each is a small collider. |
 | **Lamp posts** | plaza, north approach (x ±7.5, z −7/−15/−21) and spawn square (z 8/14) | `LAMPS` in Landmarks.jsx | Fill the bare plaza; colliders. |
+| **Street lamps (evening)** | central path x ±3, stalls, egg area, plaza edges | `LAMPS` in world/Lamps.jsx, `LAMP` in data/config.js | Glowing lamps; nearest 6 cast real point light. Evening sky/fog/sun in `LIGHT`, `FOG`, `skyTexture`. |
 | **Benches** | plaza, x ±5 at z −11/−18 and 11.5 | `BENCHES` in Landmarks.jsx | `[x, z, yaw]`; colliders. |
 | **Bushes** | lawn edges and the empty NE/SE lawn space | `BUSHES` in Landmarks.jsx | `[x, z, scale]`; colliders. |
 | **Flower beds** | scattered on the lawns | `FLOWERS` in Landmarks.jsx | `[x, z, count]`; decorative, no collider. |
