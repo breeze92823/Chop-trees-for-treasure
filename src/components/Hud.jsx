@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../systems/bloxityHooks.js'
-import { authState, getDisplayName } from '../systems/bloxity.js'
+import { authState, getDisplayName, login } from '../systems/bloxity.js'
+import { DEV_MODE } from '../data/bloxity.js'
 import { settings } from '../systems/settingsState.js'
 import { useGameStore } from '../store/useGameStore.js'
 import { useRemoteStore } from '../store/useRemoteStore.js'
@@ -31,6 +32,19 @@ export default function Hud() {
   useAuth()
   const netStatus = useGameStore((s) => s.netStatus)
   const others = useRemoteStore((s) => s.ids.length)
+  return (
+    <>
+      {authState.ready && !authState.user && !DEV_MODE && (
+        <button type="button" className="bloxity-login" onClick={() => login()}>
+          Log in with Bloxity
+        </button>
+      )}
+      <HudStatus netStatus={netStatus} others={others} />
+    </>
+  )
+}
+
+function HudStatus({ netStatus, others }) {
   return (
     <div className="hud">
       <div><b>{getDisplayName()}</b>{authState.user ? '' : ' (guest)'}</div>

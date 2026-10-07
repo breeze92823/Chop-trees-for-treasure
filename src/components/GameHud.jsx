@@ -155,11 +155,17 @@ function toggleWindow(key) {
   useGameStore.setState({ petsMenu: false, indexMenu: false, ...(open && { eggMenu: null, autoHatch: false }), [key]: open })
 }
 
+function toggleAutoChop() {
+  playButtonClick()
+  useGameStore.setState((s) => ({ autoChop: !s.autoChop }))
+}
+
 function LeftMenu() {
+  const autoChop = useGameStore((s) => s.autoChop)
   return (
     <div className="left" onPointerDown={stop}>
       <T size={30} w={4} fill={grad('#fff3a0', '#ffb21f')} stroke="#4a2a00" className="auto-title">Auto Collects</T>
-      <Btn className="autochop" style={{ '--bg': '#46cf3a' }}>
+      <Btn className="autochop" style={{ '--bg': autoChop ? '#46cf3a' : '#e8303a' }} onClick={toggleAutoChop}>
         <T size={32} w={5}>AUTO CHOP</T>
       </Btn>
       <div className="menu">

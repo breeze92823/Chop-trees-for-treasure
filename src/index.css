@@ -16,3 +16,5 @@ canvas { display: block; touch-action: none; }
 
 .hud { position: fixed; left: 12px; top: 10px; z-index: 5; color: #fff; font-size: 14px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); pointer-events: none; line-height: 1.5; }
 .hud b { font-weight: 700; }
+.bloxity-login { position: fixed; left: 12px; top: 10px; z-index: 6; padding: 8px 14px; border: 0; border-radius: 8px; background: #2d7cff; color: #fff; font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+.bloxity-login:hover { filter: brightness(1.1); }

@@ -6,6 +6,7 @@
 import { CHOP, CHOP_TIMING } from '../data/economy.js'
 import { FOREST_TREES } from '../world/forestTrees.js'
 import { usePlayerData } from '../store/usePlayerData.js'
+import { useGameStore } from '../store/useGameStore.js'
 import { player } from './playerState.js'
 import { addSystem } from './loop.js'
 import { CHOP_HIT_TWIST, CHOP_AIM, chopSide } from './avatarAnim.js'
@@ -82,7 +83,7 @@ function faceSideways(tree, side) {
 
 function step() {
   const now = performance.now()
-  const wants = held && !isInputLocked()
+  const wants = (held || useGameStore.getState().autoChop) && !isInputLocked()
   if (cycleStart === null && !wants) return // idle: skip the tree scan
   const tree = nearestTree() // one scan per frame
   if (cycleStart === null) {
