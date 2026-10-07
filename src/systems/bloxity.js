@@ -156,6 +156,19 @@ function settleAuth() {
   if (authState.ready) return
   authState.ready = true
   emitAuth()
+  autoLogin()
+}
+
+// Once auth has settled with nobody signed in, open the Bloxity sign-in popup
+// automatically (once per page load). Skipped in VITE_DEV_MODE, where sdk() is
+// null; a blocked or dismissed popup leaves the player as a guest and the HUD
+// login button still works.
+let autoLoginTried = false
+
+function autoLogin() {
+  if (autoLoginTried || DEV_MODE || authState.user || !sdk()) return
+  autoLoginTried = true
+  login()
 }
 
 function onUser() {
