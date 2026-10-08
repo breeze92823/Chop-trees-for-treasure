@@ -98,8 +98,9 @@ export const ITEM_CATALOG = [
   ...EXTRA_ITEMS.map(([name, rarity, glyph]) => [name, rarity, glyph]),
 ].sort((a, b) => RARITIES.indexOf(a[1]) - RARITIES.indexOf(b[1])) // stable: keeps insertion order within a tier
 
-// Per-item reference: name -> { rarity, value in $ }. (Rock is index-only, it never drops.)
+// Per-item reference: name -> { rarity, value in $ }.
 export const ITEM_INFO = {
+  Rock: { rarity: 'Common', value: 10 },
   Coal: { rarity: 'Common', value: 12 },
   Bone: { rarity: 'Common', value: 16 },
   Skull: { rarity: 'Common', value: 18 },
