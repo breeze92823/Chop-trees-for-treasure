@@ -21,7 +21,7 @@ import {
 } from 'three'
 import { MATERIAL_PBR } from '../data/materials.js'
 import { PROPORTIONS, RIG, RIG_HEIGHT, clamp } from '../data/bloxity.js'
-import { AVATAR_SLOTS, assetUrl, describeItem, isEquipped, itemUrls, partUrl, skinUrl } from '../data/avatarCdn.js'
+import { AVATAR_SLOTS, assetUrl, composedSkinUrl, describeItem, isEquipped, itemUrls, partUrl, skinUrl } from '../data/avatarCdn.js'
 import { player } from './playerState.js'
 
 const HAT_LIFT = 0.8
@@ -81,19 +81,26 @@ function configureItemTexture(texture) {
 
 // With no skin equipped the portal still dresses the body in its default skin
 // (skins/0.png), so do the same rather than keeping the rig's embedded map.
-async function applySkin(root, id) {
+async function applySkin(root, equipped, skinTextureUrl) {
+  const id = equipped.skinId
   const wanted = isEquipped(id)
-  let url = skinUrl(wanted ? id : 0)
+  let plain = skinUrl(wanted ? id : 0)
   if (wanted) {
     const item = await describeItem(id)
-    url = assetUrl(item?.assetPaths?.texture) || url
+    plain = assetUrl(item?.assetPaths?.texture) || plain
   }
-  let texture
-  try {
-    texture = configureSkinTexture(await textureLoader.loadAsync(url))
-  } catch {
-    return // keep the rig's embedded texture
+  // The portal's composed skin (face/shirt/pants drawn on) first, then the bare one.
+  const candidates = [skinTextureUrl || composedSkinUrl(equipped), plain].filter(Boolean)
+  let texture = null
+  for (const url of candidates) {
+    try {
+      texture = configureSkinTexture(await textureLoader.loadAsync(url))
+      break
+    } catch {
+      // try the next candidate
+    }
   }
+  if (!texture) return // keep the rig's embedded texture
   root.traverse((o) => {
     if (o.isSkinnedMesh && o.material) {
       o.material.map = texture
@@ -160,11 +167,12 @@ async function applyItem(root, slot, id) {
   const anchor = root.nodes[slot.attach]
   if (!anchor) return
   const item = await describeItem(id)
-  const fallback = itemUrls(slot, id)
+  const fallback = slot.type ? itemUrls(slot, id) : {}
   const urls = {
     mesh: assetUrl(item?.assetPaths?.mesh) || fallback.mesh,
     texture: assetUrl(item?.assetPaths?.texture) || fallback.texture,
   }
+  if (!urls.mesh) return
   let object
   try {
     object = await objLoader.loadAsync(urls.mesh)
@@ -174,6 +182,7 @@ async function applyItem(root, slot, id) {
   }
   let texture = null
   try {
+    if (!urls.texture) throw new Error('no texture')
     texture = configureItemTexture(await textureLoader.loadAsync(urls.texture))
   } catch {
     // An untextured accessory still reads better than skipping it outright.
@@ -187,7 +196,8 @@ async function applyItem(root, slot, id) {
   })
   // Hats are authored for the portal rig, whose renderer parents them to the
   // head bone lifted 0.8 up; at the bone origin they sink into the head.
-  if (slot.key === 'hatId') object.position.set(0, HAT_LIFT, 0)
+  if (slot.at) object.position.set(...slot.at)
+  else if (slot.key === 'hatId') object.position.set(0, HAT_LIFT, 0)
   anchor.add(object)
 }
 
@@ -196,23 +206,25 @@ async function applyItem(root, slot, id) {
 // the hat is equipped, but looks reaching us another way (e.g. a remote
 // player's saved JSON) may predate it, so enforce it here too.
 async function withForcedHead(equipped) {
-  if (!isEquipped(equipped.hatId)) return equipped
-  const hat = await describeItem(equipped.hatId)
-  const forced = hat?.forceHeadId
-  if (forced === undefined || forced === null) return equipped
-  return { ...equipped, headId: forced }
+  for (const key of ['hatId', 'hairId', 'maskId']) {
+    if (!isEquipped(equipped[key])) continue
+    const item = await describeItem(equipped[key])
+    const forced = item?.forceHeadId
+    if (forced !== undefined && forced !== null) return { ...equipped, headId: forced }
+  }
+  return equipped
 }
 
 // `equipped` is the shape SDK.avatar.getEquipped() returns. `root` is a
 // character from defaultCharacter.js, whose `nodes` map names every rig node.
 // `signal` (optional AbortSignal) lets a caller cancel a stale load.
-export async function attachEquippedAccessories(root, equipped, { signal } = {}) {
+export async function attachEquippedAccessories(root, equipped, { signal, skinTextureUrl } = {}) {
   if (!root || !equipped) return
   try {
     ownMaterials(root)
     equipped = await withForcedHead(equipped)
     if (signal?.aborted) return
-    await applySkin(root, equipped.skinId)
+    await applySkin(root, equipped, skinTextureUrl)
     if (signal?.aborted) return
     // Slots load in parallel; each one swallows its own failure.
     await Promise.all(

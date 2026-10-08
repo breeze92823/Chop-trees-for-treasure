@@ -40,3 +40,14 @@ export const BUTTON_CLICK_SYNTH_ATTACK_S = 0.002
 export const BUTTON_CLICK_SYNTH_DECAY_S = 0.045
 export const BUTTON_CLICK_SYNTH_NOISE_GAIN = 0.22 // 0..1, mixed under the tone
 export const BUTTON_CLICK_SYNTH_NOISE_DECAY_S = 0.02
+
+// Cash-spent "ka-ching" (systems/sfx.js playCashSpend): leading silence is
+// trimmed, the clip is capped to CASH_SPEND_MAX_SECONDS, peak-normalized,
+// faded out, then scaled by CASH_SPEND_GAIN. Calls closer than
+// CASH_SPEND_MIN_GAP_MS apart are dropped so auto-spin/auto-hatch don't stack it.
+export const CASH_SPEND_SOUND_URL = '/audio/cash.mp3'
+export const CASH_SPEND_PEAK = 0.9
+export const CASH_SPEND_MAX_SECONDS = 1.2
+export const CASH_SPEND_FADE_OUT_S = 0.15
+export const CASH_SPEND_GAIN = 0.2
+export const CASH_SPEND_MIN_GAP_MS = 80

@@ -25,6 +25,15 @@ export const AVATAR_SLOTS = [
   { key: 'legRId', kind: 'part', type: 'legs', side: 'R', replaces: 'default_leg_R' },
   { key: 'hatId', kind: 'item', type: 'hats', attach: 'Neck1' },
   { key: 'backId', kind: 'item', type: 'back', attach: 'Spine2' },
+  // Hair and masks load exactly like hats (same folders, same anchor).
+  { key: 'hairId', kind: 'item', type: 'hats', attach: 'Neck1', at: [0, 0.8, 0] },
+  { key: 'maskId', kind: 'item', type: 'hats', attach: 'Neck1', at: [0, 0.8, 0] },
+  // The docs give these origins in model space; converted to each bone's local
+  // space (Spine2 sits at y 4.2, Spine1 at y 2.4). No URL pattern is documented,
+  // so they load through the catalogue's assetPaths only.
+  { key: 'neckId', kind: 'item', attach: 'Spine2', at: [0, 0.6, 0] },
+  { key: 'chestId', kind: 'item', attach: 'Spine2', at: [0, -0.6, 0] },
+  { key: 'waistId', kind: 'item', attach: 'Spine1', at: [0, 0, 0] },
 ]
 
 export function partUrl(slot, id) {
@@ -41,6 +50,20 @@ export function itemUrls(slot, id) {
 
 export function skinUrl(id) {
   return `${AVATAR_CDN}/skins/${id}.png`
+}
+
+// The skin with the worn face, shirt and pants drawn on, built by hand for
+// players whose SDK we can't ask (the docs' pattern). Null when none of the
+// four is equipped, so the plain skin path is used.
+export function composedSkinUrl(equipped) {
+  if (!equipped) return null
+  const { skinId, pantsId, shirtId, faceId } = equipped
+  if (!isEquipped(pantsId) && !isEquipped(shirtId) && !isEquipped(faceId)) return null
+  let name = `s${isEquipped(skinId) ? skinId : 0}`
+  if (isEquipped(pantsId)) name += `_pn${pantsId}`
+  if (isEquipped(shirtId)) name += `_sh${shirtId}`
+  if (isEquipped(faceId)) name += `_fc${faceId}`
+  return `https://api.bloxity.io/v1/avatar/skin-texture/${name}.png`
 }
 
 // --- Catalogue ---------------------------------------------------------

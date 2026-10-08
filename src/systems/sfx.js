@@ -11,6 +11,12 @@ import {
   LEVEL_UP_MAX_SECONDS,
   LEVEL_UP_FADE_OUT_S,
   LEVEL_UP_GAIN,
+  CASH_SPEND_SOUND_URL,
+  CASH_SPEND_PEAK,
+  CASH_SPEND_MAX_SECONDS,
+  CASH_SPEND_FADE_OUT_S,
+  CASH_SPEND_GAIN,
+  CASH_SPEND_MIN_GAP_MS,
   CHOP_HIT_SOUND_URL,
   CHOP_HIT_PEAK,
   CHOP_HIT_MAX_SECONDS,
@@ -152,6 +158,7 @@ export function preload() {
   if (!ctx) return
   loadBuffer(ctx, POWER_GAIN_SOUND_URL)
   loadChopBuffer(ctx)
+  loadCashBuffer(ctx)
   synthesizeActionFailBuffer(ctx)
   synthesizeButtonClickBuffer(ctx)
 }
@@ -261,4 +268,48 @@ export function playLevelUp() {
   const ctx = unlock()
   if (!ctx) return
   loadLevelUpBuffer(ctx).then((b) => playBuffer(ctx, b, LEVEL_UP_GAIN))
+}
+
+// Cash spent: trim leading/trailing silence, cap length, peak-normalize, fade out.
+let cashBufferPromise = null
+function loadCashBuffer(ctx) {
+  if (!cashBufferPromise) {
+    cashBufferPromise = fetch(CASH_SPEND_SOUND_URL)
+      .then((r) => r.arrayBuffer())
+      .then((data) => ctx.decodeAudioData(data))
+      .then((src) => {
+        const rate = src.sampleRate
+        const chans = Array.from({ length: src.numberOfChannels }, (_, c) => src.getChannelData(c))
+        const quiet = (i) => chans.every((d) => Math.abs(d[i]) < 0.01)
+        let start = 0
+        while (start < src.length - 1 && quiet(start)) start++
+        let end = Math.min(src.length, start + Math.floor(CASH_SPEND_MAX_SECONDS * rate))
+        while (end > start + 1 && quiet(end - 1)) end--
+        const len = Math.max(end - start, 1)
+        let peak = 0
+        for (const d of chans) for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(d[start + i]))
+        const k = peak > 0 ? CASH_SPEND_PEAK / peak : 1
+        const fade = Math.min(Math.floor(CASH_SPEND_FADE_OUT_S * rate), len)
+        const out = ctx.createBuffer(src.numberOfChannels, len, rate)
+        chans.forEach((d, c) => {
+          const b = out.getChannelData(c)
+          for (let i = 0; i < len; i++) b[i] = d[start + i] * k
+          for (let i = 0; i < fade; i++) b[len - 1 - i] *= i / fade
+        })
+        return out
+      })
+      .catch(() => null)
+  }
+  return cashBufferPromise
+}
+
+// Fire-and-forget "ka-ching" when cash is spent (shop buys, spins, hatches).
+let lastCashSpendAt = 0
+export function playCashSpend() {
+  const now = performance.now()
+  if (now - lastCashSpendAt < CASH_SPEND_MIN_GAP_MS) return
+  lastCashSpendAt = now
+  const ctx = unlock()
+  if (!ctx) return
+  loadCashBuffer(ctx).then((b) => playBuffer(ctx, b, CASH_SPEND_GAIN))
 }
