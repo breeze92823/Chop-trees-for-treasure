@@ -56,6 +56,7 @@ let lastSig = ''
 let joinedAs = ''
 let lastPets = null
 let lastAura = null
+let lastArtifact = null
 let hydrated = false // the server's answer for this identity has been applied; saves are allowed
 let saveTimer = 0
 let lastSaved = ''
@@ -181,6 +182,15 @@ function sendPets() {
   room.send('setPets', { pets })
 }
 
+// The equipped artifact id ("" = none), worn on the back by every client (components/useBackItem.js).
+function sendArtifact() {
+  if (!room) return
+  const artifact = usePlayerData.getState().artifact || ''
+  if (artifact === lastArtifact) return
+  lastArtifact = artifact
+  room.send('setArtifact', { artifact })
+}
+
 // The equipped aura id ("" = none), drawn around this player by every client
 // (components/AuraFx.jsx).
 function sendAura() {
@@ -247,12 +257,14 @@ async function connect() {
     lastPose = ''
     lastPets = null
     lastAura = null
+    lastArtifact = null
     lastSaved = ''
     playTimeBase = 0
     playTimeAt = Date.now()
     sendPose()
     sendPets()
     sendAura()
+    sendArtifact()
     // 'online' (which releases the loading screen) waits for the server's answer so the first frame
     // shows the saved progress, not a fresh game.
     const goOnline = () => setStatus('online')
@@ -322,6 +334,7 @@ export function startNet() {
   setInterval(syncRoster, ROSTER_MS)
   usePlayerData.subscribe(sendPets)
   usePlayerData.subscribe(sendAura)
+  usePlayerData.subscribe(sendArtifact)
   usePlayerData.subscribe(onDataChange)
   window.addEventListener('pagehide', saveNow)
   document.addEventListener('visibilitychange', () => document.hidden && saveNow())

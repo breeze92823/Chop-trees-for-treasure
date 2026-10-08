@@ -12,6 +12,7 @@ import { usePlayerData } from '../store/usePlayerData.js'
 import { equippedPetIds } from '../systems/pets.js'
 import PetFollowers from './PetFollowers.jsx'
 import AuraFx from './AuraFx.jsx'
+import { useBackItem } from './useBackItem.js'
 
 const _up = new Vector3(0, 1, 0)
 const _targetQuat = new Quaternion()
@@ -90,6 +91,8 @@ export default function Player() {
   const gaitRef = useRef(null)
   const pets = usePlayerData((s) => equippedPetIds(s).join(','))
   const aura = usePlayerData((s) => s.aura)
+  const artifact = usePlayerData((s) => s.artifact)
+  useBackItem(avatar, artifact)
 
   // Rebuilt per loaded avatar — the gait's cached bind-pose quaternions
   // (see avatarAnim.js) belong to one specific rig instance.
