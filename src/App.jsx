@@ -5,7 +5,7 @@ import { notifyFirstFrame } from './systems/bloxity.js'
 import { settings } from './systems/settingsState.js'
 import { useSettings } from './systems/bloxityHooks.js'
 import { CAMERA, COLORS, FOG } from './data/config.js'
-import { graphicsPreset } from './utils/graphics.js'
+import { graphicsPreset, IS_MOBILE } from './utils/graphics.js'
 import GameLoop from './components/GameLoop.jsx'
 import World from './components/World.jsx'
 import Sky from './components/Sky.jsx'
@@ -18,6 +18,8 @@ import LoadingScreen from './components/LoadingScreen.jsx'
 import Hud from './components/Hud.jsx'
 import GameHud from './components/GameHud.jsx'
 import InteractPrompt from './components/InteractPrompt.jsx'
+import AdaptiveResolution from './components/AdaptiveResolution.jsx'
+import MobileShadowCull from './components/MobileShadowCull.jsx'
 import TouchControls from './components/TouchControls.jsx'
 
 // Rendered last inside the Suspense boundary, so it only mounts once every
@@ -51,8 +53,10 @@ export default function App() {
         <Lighting shadowMapSize={preset.shadowMap} />
 
         <GameLoop />
+        <AdaptiveResolution max={Math.min(window.devicePixelRatio || 1, preset.dpr[1])} />
         <Suspense fallback={null}>
           <World />
+          {IS_MOBILE && preset.shadows && <MobileShadowCull />}
           <LoadingGate onReady={onSceneReady} />
         </Suspense>
         <Player />
