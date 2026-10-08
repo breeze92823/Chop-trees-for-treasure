@@ -5,7 +5,6 @@ import { notifyFirstFrame } from './systems/bloxity.js'
 import { settings } from './systems/settingsState.js'
 import { useSettings } from './systems/bloxityHooks.js'
 import { CAMERA, COLORS, FOG } from './data/config.js'
-import { graphicsPreset } from './utils/graphics.js'
 import GameLoop from './components/GameLoop.jsx'
 import World from './components/World.jsx'
 import Sky from './components/Sky.jsx'
@@ -31,11 +30,19 @@ function LoadingGate({ onReady }) {
   return null
 }
 
+// The portal's graphics_quality setting (data/bloxity.js SETTINGS).
+const GRAPHICS_PRESETS = {
+  Low: { shadows: false, antialias: false, dpr: [1, 1] },
+  Medium: { shadows: true, antialias: false, dpr: [1, 1.5] },
+  High: { shadows: true, antialias: true, dpr: [1, 2] },
+  Ultra: { shadows: true, antialias: true, dpr: [1, 2] },
+}
+
 export default function App() {
   useSettings()
   const [sceneReady, setSceneReady] = useState(false)
   const onSceneReady = useCallback(() => setSceneReady(true), [])
-  const preset = graphicsPreset(settings.graphics_quality)
+  const preset = GRAPHICS_PRESETS[settings.graphics_quality] ?? GRAPHICS_PRESETS.High
 
   return (
     <>
@@ -48,7 +55,7 @@ export default function App() {
         <color attach="background" args={[COLORS.horizon]} />
         <fog attach="fog" args={[COLORS.horizon, FOG.near, FOG.far]} />
         <Sky />
-        <Lighting shadowMapSize={preset.shadowMap} />
+        <Lighting />
 
         <GameLoop />
         <Suspense fallback={null}>

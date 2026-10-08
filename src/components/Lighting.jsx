@@ -15,7 +15,7 @@ const TARGET = new Object3D()
 
 // Bright, flat-ish daylight: strong sky/ground bounce so colours stay
 // saturated, and one shadow-casting sun. Tune everything in data/config.js LIGHT.
-export default function Lighting({ shadowMapSize = LIGHT.shadowMapSize }) {
+export default function Lighting() {
   const sun = useRef()
   useFrame(() => {
     const x = Math.round(player.position.x / SNAP) * SNAP
@@ -29,14 +29,13 @@ export default function Lighting({ shadowMapSize = LIGHT.shadowMapSize }) {
       <ambientLight intensity={LIGHT.ambient} />
       <primitive object={TARGET} />
       <directionalLight
-        key={shadowMapSize} // a new map size needs a fresh shadow map
         ref={sun}
         position={[OX, OY, OZ]}
         target={TARGET}
         color={LIGHT.sun.color}
         intensity={LIGHT.sun.intensity}
-        castShadow={shadowMapSize > 0}
-        shadow-mapSize={[shadowMapSize || 1, shadowMapSize || 1]}
+        castShadow
+        shadow-mapSize={[LIGHT.shadowMapSize, LIGHT.shadowMapSize]}
         shadow-camera-left={-SHADOW_EXTENT}
         shadow-camera-right={SHADOW_EXTENT}
         shadow-camera-top={SHADOW_EXTENT}
