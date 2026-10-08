@@ -61,7 +61,7 @@ export const LIGHT = {
   ambient: 0.3,
   shadowMapSize: 4096,
 }
-export const FOG = { near: 120, far: 340 }
+export const FOG = { near: 40, far: 100 }
 // Street lamps (world/Lamps.jsx): only the `pool` nearest to the player cast real light.
 export const LAMP = { color: '#ffc46b', intensity: 12, distance: 20, pool: 8, height: 4.2 }
 
@@ -69,7 +69,7 @@ export const LAMP = { color: '#ffc46b', intensity: 12, distance: 20, pool: 8, he
 export const CAMERA = {
   fov: 70,
   near: 0.1,
-  far: 500,
+  far: 140,
   startPitch: 0.32, // radians above the horizon
   minPitch: -0.1,
   maxPitch: 1.2,

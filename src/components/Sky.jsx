@@ -7,7 +7,7 @@ import { skyTexture } from '../utils/textures.js'
 // puffy clouds (utils/textures.js skyTexture). Follows the camera so the
 // clouds sit at infinity; ignores fog and tone mapping so the colours stay
 // as painted.
-const DOME_RADIUS = 300
+const DOME_RADIUS = 100 // must stay under CAMERA.far (data/config.js) or the dome is clipped
 
 export default function Sky() {
   const camera = useThree((s) => s.camera)
