@@ -264,6 +264,7 @@ async function connect() {
       playTimeBase = Number(doc.playTime) || 0
       playTimeAt = Date.now()
       hydrated = true
+      useGameStore.setState({ progressLoaded: true })
       lastSaved = reconnect ? '' : JSON.stringify(pickSaved(usePlayerData.getState()))
       if (reconnect) saveNow()
       goOnline()
@@ -271,6 +272,7 @@ async function connect() {
     r.onMessage('noProgress', () => {
       // A new account (or a guest, or a server without a database): keep the starting state and store it.
       hydrated = true
+      useGameStore.setState({ progressLoaded: true })
       lastSaved = ''
       saveNow()
       goOnline()
@@ -344,6 +346,7 @@ export function startNet() {
     joinedAs = id
     saveNow() // the final save under the old identity
     hydrated = false
+    useGameStore.setState({ progressLoaded: false })
     room.send('identify', { userId: id, username: getDisplayName() })
     room.send('setAvatar', { avatar: avatarJson() })
   })

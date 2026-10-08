@@ -16,6 +16,7 @@ import AurasMenu from './AurasMenu.jsx'
 import UpgradesMenu from './UpgradesMenu.jsx'
 import ArtifactsMenu from './ArtifactsMenu.jsx'
 import OfflineWindow from './OfflineWindow.jsx'
+import Tutorial from './Tutorial.jsx'
 import { BookIcon, CashIcon, RebirthIcon } from './hudIcons.jsx'
 import ChopFx from './ChopFx.jsx'
 import LevelUpPopup from './LevelUpPopup.jsx'
@@ -232,6 +233,7 @@ export default function GameHud() {
       )}
       <LeftMenu />
       <Stats />
+      <Tutorial />
       <EggMenu />
       <PetsMenu />
       <ForgeMenu />

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { STARTING_BALANCE } from '../data/eggs.js'
 import { SERVER_URL } from '../data/config.js'
+import { TUTORIAL_DONE } from '../data/tutorial.js'
 
 // The local player's progress: balances, owned pets, boosts. In multiplayer
 // (a server URL is configured) it is never read from or written to the browser:
@@ -44,6 +45,7 @@ function fresh() {
     rewards: [], // owned one-time Rewards gear ids (Pathfinder Wings)
     potions: { master: 0, luck: 0, cash: 0, strength: 0 }, // potions in stock (systems/rewards.js)
     boostUntil: { strength: 0, cash: 0, wood: 0 }, // ms timestamps the potion boosts run out (systems/potions.js)
+    tutorialStep: 0, // onboarding progress, 0..TUTORIAL_DONE (data/tutorial.js, components/Tutorial.jsx); the server only ever raises it
   }
 }
 
@@ -59,7 +61,8 @@ function load() {
   if (SERVER_URL) return withEnvCash(state) // multiplayer: systems/net.js hydrates from the backend
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY))
-    if (saved && typeof saved === 'object') state = { ...state, ...saved, passes: { ...state.passes, ...saved.passes }, upgrades: { ...state.upgrades, ...saved.upgrades }, potions: { ...state.potions, ...saved.potions }, quests: { ...state.quests, ...saved.quests }, boostUntil: { ...state.boostUntil, ...saved.boostUntil } }
+    if (saved && typeof saved === 'object') state = { ...state, tutorialStep: TUTORIAL_DONE, ...saved, // a save from before the tutorial existed counts as finished
+       passes: { ...state.passes, ...saved.passes }, upgrades: { ...state.upgrades, ...saved.upgrades }, potions: { ...state.potions, ...saved.potions }, quests: { ...state.quests, ...saved.quests }, boostUntil: { ...state.boostUntil, ...saved.boostUntil } }
   } catch {
     // private window / blocked storage / corrupt save — start fresh
   }
