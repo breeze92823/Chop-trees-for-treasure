@@ -2,14 +2,13 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Object3D } from 'three'
 import { LIGHT } from '../data/config.js'
-import { IS_MOBILE } from '../utils/graphics.js'
 import { player } from '../systems/playerState.js'
 
 // The forest corridor is far longer than one shadow frustum can cover sharply,
 // so the sun rig follows the player: it keeps the same offset and aims at a
 // point that tracks them (snapped to SNAP metres so shadows don't shimmer).
 const [OX, OY, OZ] = LIGHT.sun.offset
-const SHADOW_EXTENT = IS_MOBILE ? 45 : 75 // half-size of the shadow frustum, m (tighter on mobile: sharper at a small map)
+const SHADOW_EXTENT = 75 // half-size of the shadow frustum, m
 const SNAP = 2
 // The light aims at this; it must be in the scene for its matrix to update.
 const TARGET = new Object3D()
