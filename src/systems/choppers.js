@@ -11,6 +11,7 @@ import { addSystem } from './loop.js'
 import { clearInteractTarget, setInteractTarget } from './interact.js'
 import { showActionResult } from './actionResult.js'
 import { formatNumber } from '../utils/format.js'
+import { playCashSpend } from './sfx.js'
 
 const stall = STALLS.find((s) => s.id === 'choppers')
 const KEY = 'choppers:stall'
@@ -35,6 +36,7 @@ export function equipChopper(id) {
   const s = usePlayerData.getState()
   if (!s.choppers.includes(id) || s.chopper === id) return
   usePlayerData.setState({ chopper: id })
+  if (currency !== 'gems') playCashSpend()
 }
 
 // Buys with cash ('cash') or Robux gems ('gems') and equips it.

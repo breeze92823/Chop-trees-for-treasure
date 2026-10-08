@@ -13,6 +13,7 @@ import { artifactBonus } from './artifacts.js'
 import { potionMultiplier } from './potions.js'
 import { addQuestProgress } from './quests.js'
 import { showActionResult } from './actionResult.js'
+import { playCashSpend } from './sfx.js'
 import { formatNumber } from '../utils/format.js'
 
 const stall = STALLS.find((s) => s.id === 'sell')
@@ -48,6 +49,7 @@ function pay(items) {
   const gain = payout(bagValue(items))
   const sold = new Set(items)
   usePlayerData.setState({ cash: s.cash + gain, bag: s.bag.filter((it) => !sold.has(it)) })
+  playCashSpend()
   addQuestProgress('sell', gain)
   return gain
 }

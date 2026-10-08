@@ -13,6 +13,7 @@ import { addSystem } from './loop.js'
 import { clearInteractTarget, setInteractTarget } from './interact.js'
 import { showActionResult } from './actionResult.js'
 import { formatNumber } from '../utils/format.js'
+import { playCashSpend } from './sfx.js'
 
 const stall = STALLS.find((s) => s.id === 'upgrades')
 const KEY = 'upgrades:stall'
@@ -56,6 +57,7 @@ export function buyUpgrade(id, currency = 'cash') {
     return
   }
   usePlayerData.setState({ [gems ? 'robux' : 'cash']: balance - price, upgrades: { ...s.upgrades, [id]: level + 1 } })
+  if (!gems) playCashSpend()
   showActionResult(`${u.name} upgraded to level ${level + 1}`, true)
 }
 

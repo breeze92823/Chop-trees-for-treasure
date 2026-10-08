@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Quaternion, Vector3 } from 'three'
 import { player } from '../systems/playerState.js'
-import { authState, getEquippedAvatar, getProportions, onAvatarChanged, onProportionsChanged, subscribeAuth } from '../systems/bloxity.js'
+import { authState, getEquippedAvatar, getProportions, getSkinTextureUrl, onAvatarChanged, onProportionsChanged, subscribeAuth } from '../systems/bloxity.js'
 import { DEV_MODE } from '../data/bloxity.js'
 import { applyProportions, attachEquippedAccessories } from '../systems/avatarLoader.js'
 import { buildDefaultCharacter, loadBaseCharacter } from '../systems/defaultCharacter.js'
@@ -47,7 +47,7 @@ function useBloxityAvatar() {
       const group = await loadBaseCharacter()
       if (cancelled || mine !== generation) return
       const equipped = signedIn && !DEV_MODE ? getEquippedAvatar() : null
-      await attachEquippedAccessories(group, equipped, { signal: controller.signal })
+      await attachEquippedAccessories(group, equipped, { signal: controller.signal, skinTextureUrl: getSkinTextureUrl() })
       if (cancelled || mine !== generation) return
       currentRef.current = group
       applyProportions(group, getProportions())

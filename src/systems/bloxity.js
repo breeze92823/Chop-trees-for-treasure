@@ -163,6 +163,7 @@ function onUser() {
   const user = SDK ? SDK.auth.getUser() : null
   const generation = ++userGeneration
   latestEquipped = null // a different account's equip event must not linger
+  latestProportions = null
 
   if (user || authState.ready) {
     if (settleTimer) clearTimeout(settleTimer)
@@ -220,7 +221,14 @@ export function init() {
       )
     }
     if (typeof SDK.avatar?.onProportionsChanged === 'function') {
-      unsubscribers.push(SDK.avatar.onProportionsChanged(() => emitTo(proportionListeners)))
+      unsubscribers.push(
+        SDK.avatar.onProportionsChanged((proportions) => {
+          // Fires before persistence completes, so getProportions() may still
+          // hold the old values: the event's own payload wins, as with equipped.
+          if (proportions && typeof proportions === 'object') latestProportions = proportions
+          emitTo(proportionListeners)
+        }),
+      )
     }
 
     // 'chat_message_sent' and 'pointer_lock_changed' have no handler: the base
@@ -330,6 +338,7 @@ export function getEquippedAvatar() {
 // in init() (right after SDK.init), so a caller registering early or late
 // never misses a customizer change.
 let latestEquipped = null
+let latestProportions = null
 const avatarListeners = new Set()
 const proportionListeners = new Set()
 
@@ -358,16 +367,30 @@ export function getProportions() {
   const SDK = sdk()
   if (!SDK) return null
   try {
-    return SDK.avatar.getProportions()
+    const current = SDK.avatar.getProportions()
+    return latestProportions ? { ...current, ...latestProportions } : current
+  } catch {
+    return latestProportions
+  }
+}
+
+// URL of the skin texture with the worn face, shirt and pants already drawn
+// on (SDK.avatar.getSkinTextureUrl). Null when the SDK can't supply one.
+export function getSkinTextureUrl() {
+  const SDK = sdk()
+  if (!SDK || typeof SDK.avatar?.getSkinTextureUrl !== 'function') return null
+  try {
+    const url = SDK.avatar.getSkinTextureUrl()
+    return typeof url === 'string' && url ? url : null
   } catch {
     return null
   }
 }
 
-// Fires when the player adjusts a proportion slider in the customizer.
-// Deliberately doesn't pass the callback's payload through — same rule as
-// auth: callers re-read via getProportions() instead of trusting a cached
-// value. No-op unsubscribe if the SDK or listener isn't available.
+// Fires when the player adjusts a proportion slider in the customizer. The
+// handlers re-read via getProportions(), which prefers the event's payload
+// over a possibly lagging SDK read. No-op unsubscribe if the SDK or listener
+// isn't available.
 export function onProportionsChanged(fn) {
   proportionListeners.add(fn)
   return () => proportionListeners.delete(fn)

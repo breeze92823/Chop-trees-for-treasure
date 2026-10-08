@@ -10,6 +10,7 @@ import { petInfo, petKey, petSlots } from './pets.js'
 import { eggLuckBonus } from './upgrades.js'
 import { announceHatch, friendInServer } from './net.js'
 import { formatNumber } from '../utils/format.js'
+import { playCashSpend } from './sfx.js'
 
 const CURRENCY_NAME = { wood: 'Wood', robux: 'Robux', cash: 'Cash', questGold: 'Gold' }
 const AUTO_DELAY_MS = 350
@@ -70,6 +71,7 @@ export function tryHatch(kind, count = 1) {
     discovered: [...discovered],
     nextPetId,
   })
+  if (egg.currency === 'cash') playCashSpend()
 
   const rare = hatched.map(petInfo).filter((p) => p && ANNOUNCE_RARITIES.includes(p.rarity))
   if (rare.length) announceHatch(rare.map((p) => p.id))
@@ -114,5 +116,6 @@ export function buyBoost(id) {
   if (id === 'luck') update.luckUntil = Math.max(Date.now(), s.luckUntil) + LUCK.minutes * 60_000
   else update.passes = { ...s.passes, [id]: true }
   usePlayerData.setState(update)
+  playCashSpend()
   showActionResult(id === 'luck' ? `Luck x${LUCK.factor} for ${LUCK.minutes} minutes!` : `Bought ${boost.label}`, true)
 }

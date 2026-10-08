@@ -11,7 +11,7 @@ import { player } from './playerState.js'
 import { addSystem } from './loop.js'
 import { clearInteractTarget, setInteractTarget } from './interact.js'
 import { showActionResult } from './actionResult.js'
-import { playLevelUp } from './sfx.js'
+import { playLevelUp, playCashSpend } from './sfx.js'
 import { formatNumber } from '../utils/format.js'
 import { PHYSICS } from '../data/config.js'
 import { RARITIES } from '../data/loot.js'
@@ -63,6 +63,7 @@ export function buyLuckyRoll() {
     return false
   }
   usePlayerData.setState({ cash: s.cash - AURA.luckyRollCash, luckyRolls: s.luckyRolls + 1 })
+  playCashSpend()
   showActionResult('+1 Lucky Roll', true)
   return true
 }
@@ -88,6 +89,7 @@ export function spin(lucky = false) {
     spins: s.spins + 1,
     pity,
   })
+  if (!lucky) playCashSpend()
   useGameStore.setState({ auraBurst: { at: performance.now(), color: won.color } })
   if (won.mult >= 1.5) playLevelUp()
   showActionResult(`${won.emoji} ${won.name} (${won.rarity}) x${won.mult} Strength, +${won.speed}% Run Speed`, true)
