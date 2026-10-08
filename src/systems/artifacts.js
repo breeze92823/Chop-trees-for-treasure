@@ -58,7 +58,11 @@ export const canCraftWithIngredients = (a, state = usePlayerData.getState()) =>
 export function craftWithIngredients(id) {
   const s = usePlayerData.getState()
   const a = artifactInfo(id)
-  if (!a?.recipe || s.artifacts.includes(id)) return
+  if (!a?.recipe) return
+  if (s.artifacts.includes(id)) {
+    showActionResult(`You already own ${a.name}`, false)
+    return
+  }
   if (!canCraftWithIngredients(a, s)) {
     showActionResult(s.wood < a.recipe.wood ? 'Not enough wood!' : 'Missing ingredients in your Bag!', false)
     return

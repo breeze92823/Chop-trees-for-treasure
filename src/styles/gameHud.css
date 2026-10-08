@@ -1270,7 +1270,7 @@
 
 /* --- Artifact craft page (ArtifactCraft.jsx): ingredients, recipe grid, CRAFT; reference px --- */
 .acraft { position: absolute; inset: 0; }
-.acraft-canvas { position: absolute !important; inset: 0; pointer-events: none; }
+.acraft-canvas { position: absolute !important; inset: 0; pointer-events: none !important; }
 .acraft-back { position: absolute; z-index: 3; left: calc(28 * var(--s)); top: calc(66 * var(--s)); width: calc(34 * var(--s)); height: calc(34 * var(--s)); padding: calc(4 * var(--s)); border-radius: calc(3 * var(--s)); box-sizing: border-box; }
 .acraft-title { position: absolute; left: 0; right: 0; top: calc(60 * var(--s)); text-align: center; display: flex; justify-content: center; }
 .acraft-label { position: absolute; left: calc(28 * var(--s)); top: calc(112 * var(--s)); }
