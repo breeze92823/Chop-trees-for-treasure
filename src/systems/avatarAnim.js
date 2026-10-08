@@ -139,6 +139,43 @@ registerPose('cheer', (gait, _dt, w) => {
   gait.q.setFromAxisAngle(gait.axis, -3.0 * ease01(w))
   for (const a of gait.arms) a.bone.quaternion.copy(a.bind).premultiply(gait.q)
 })
+// Looping victory dance for the leaderboard statues: a bouncing beat, hips/torso
+// swaying side to side, knees pumping alternately, and the arms flung up in a V that
+// swaps every two beats between "both high" and "one up, one pointing forward".
+const DANCE_HZ = 1.6 // beats per second
+registerPose('dance', (gait, dt, w) => {
+  gait.danceT = (gait.danceT || 0) + dt
+  const beat = gait.danceT * DANCE_HZ * Math.PI * 2
+  const e = ease01(Math.min(w, 1))
+  // 0..1, flips every two beats; smoothed so the point/raise change is not a snap.
+  const swap = ease01(0.5 + 0.5 * Math.sin(beat / 4))
+  const pump = Math.sin(beat * 2) * 0.18 // arms punch up on every beat
+  for (const a of gait.arms) {
+    const left = a.bone.name === 'ArmL1'
+    const sign = left ? -1 : 1
+    const point = left ? swap : 1 - swap // 1 = this arm points forward
+    const raise = -(2.7 - point * 1.4) + pump * (1 - point * 0.5)
+    gait.q.setFromAxisAngle(gait.axis, raise * e)
+    a.bone.quaternion.copy(a.bind).premultiply(gait.q)
+    gait.q.setFromAxisAngle(gait.swayAxis, sign * (0.45 - point * 0.3) * e)
+    a.bone.quaternion.premultiply(gait.q)
+  }
+  for (const limb of gait.limbs) {
+    if (limb.kind !== 'leg') continue
+    const side = limb.name === 'LegL1' ? 1 : -1
+    // alternate knee lifts: each leg kicks up on its own half of the two-beat cycle
+    const lift = Math.max(0, Math.sin(beat + (side > 0 ? 0 : Math.PI))) * 0.5
+    gait.q.setFromAxisAngle(gait.axis, -lift * e)
+    limb.bone.quaternion.copy(limb.bind).premultiply(gait.q)
+  }
+  if (gait.spine) {
+    gait.q.setFromAxisAngle(AXES.z, Math.sin(beat) * 0.14 * e) // hip/torso sway
+    gait.spine.quaternion.copy(gait.spineBind).premultiply(gait.q)
+    gait.q.setFromAxisAngle(AXES.y, Math.sin(beat / 2) * 0.22 * e) // twist
+    gait.spine.quaternion.premultiply(gait.q)
+  }
+  gait.built.root.position.y = Math.abs(Math.sin(beat)) * 0.1 * e // bounce
+})
 // Repeated two-handed overhead swing, e.g. an axe or pickaxe.
 // Looping side chop, timed by CHOP_TIMING (seconds, shared with systems/chop.js so
 // wood lands on the impact frame):

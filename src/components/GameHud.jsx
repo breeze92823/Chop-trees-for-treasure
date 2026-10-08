@@ -6,18 +6,21 @@ import { RAINBOW, grad, T, Icon, stop, Btn, Emoji } from './hudParts.jsx'
 import EggMenu from './EggMenu.jsx'
 import HatchOverlay from './HatchOverlay.jsx'
 import PetsMenu from './PetsMenu.jsx'
+import ForgeMenu from './ForgeMenu.jsx'
 import IndexMenu from './IndexMenu.jsx'
 import RebirthMenu from './RebirthMenu.jsx'
 import SellMenu from './SellMenu.jsx'
 import ChoppersMenu from './ChoppersMenu.jsx'
 import AurasMenu from './AurasMenu.jsx'
+import UpgradesMenu from './UpgradesMenu.jsx'
+import ArtifactsMenu from './ArtifactsMenu.jsx'
 import { BookIcon, CashIcon, RebirthIcon } from './hudIcons.jsx'
 import ChopFx from './ChopFx.jsx'
 import LevelUpPopup from './LevelUpPopup.jsx'
 import Announcements from './Announcements.jsx'
 import { useGameStore } from '../store/useGameStore.js'
 import { usePlayerData } from '../store/usePlayerData.js'
-import { BAG_MAX } from '../data/loot.js'
+import { bagMax } from '../systems/upgrades.js'
 import { rebirthProgress } from '../systems/rebirth.js'
 import { playButtonClick } from '../systems/sfx.js'
 import { formatNumber } from '../utils/format.js'
@@ -158,7 +161,7 @@ const MENU = [
 function toggleWindow(key) {
   playButtonClick()
   const open = !useGameStore.getState()[key]
-  useGameStore.setState({ petsMenu: false, indexMenu: false, rebirthMenu: false, sellMenu: false, choppersMenu: false, aurasMenu: false, autoSpin: false, ...(open && { eggMenu: null, autoHatch: false }), [key]: open })
+  useGameStore.setState({ forgeMenu: false, petsMenu: false, indexMenu: false, rebirthMenu: false, sellMenu: false, choppersMenu: false, upgradesMenu: false, artifactsMenu: false, aurasMenu: false, autoSpin: false, ...(open && { eggMenu: null, autoHatch: false }), [key]: open })
 }
 
 function toggleAutoChop() {
@@ -194,10 +197,11 @@ function Stats() {
   const carried = usePlayerData((s) => s.bag.length)
   const rebirths = usePlayerData((s) => s.rebirths)
   const cash = usePlayerData((s) => s.cash)
+  const capacity = usePlayerData(bagMax)
   return (
     <div className="stats">
       <div className="stat"><Icon name="log" size={52} /><T size={36} w={4} fill={grad('#ffe0b0', '#e8a868')} stroke="#3a1a08">{formatNumber(wood)}</T></div>
-      <div className="stat"><Emoji size={40}>🎒</Emoji><T size={36} w={4}>{`${carried}/${BAG_MAX}`}</T></div>
+      <div className="stat"><Emoji size={40}>🎒</Emoji><T size={36} w={4}>{`${carried}/${capacity}`}</T></div>
       <div className="stat"><RebirthIcon size={44} /><T size={36} w={4}>{formatNumber(rebirths)}</T></div>
       <div className="stat cash"><CashIcon size={84} /><T size={56} w={5} fill={grad('#c8ff9a', '#2fcf3a')} stroke="#0c3a10">{`$${formatNumber(cash)}`}</T></div>
     </div>
@@ -216,11 +220,14 @@ export default function GameHud() {
       <Stats />
       <EggMenu />
       <PetsMenu />
+      <ForgeMenu />
       <IndexMenu />
       <RebirthMenu />
       <SellMenu />
       <ChoppersMenu />
       <AurasMenu />
+      <UpgradesMenu />
+      <ArtifactsMenu />
       <ChopFx />
       <LevelUpPopup />
       <Announcements />

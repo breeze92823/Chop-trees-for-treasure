@@ -10,6 +10,7 @@ import World from './components/World.jsx'
 import Sky from './components/Sky.jsx'
 import Lighting from './components/Lighting.jsx'
 import Player from './components/Player.jsx'
+import LevelUpBeam from './components/LevelUpBeam.jsx'
 import RemotePlayers from './components/RemotePlayers.jsx'
 import LoadingScreen from './components/LoadingScreen.jsx'
 import Hud from './components/Hud.jsx'
@@ -60,6 +61,7 @@ export default function App() {
           <LoadingGate onReady={onSceneReady} />
         </Suspense>
         <Player />
+        <LevelUpBeam />
         <RemotePlayers />
       </Canvas>
       <GameHud />

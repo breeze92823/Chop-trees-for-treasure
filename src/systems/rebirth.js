@@ -10,7 +10,7 @@ import { playLevelUp } from './sfx.js'
 
 // Level needed for the next rebirth.
 export function rebirthLevel(state = usePlayerData.getState()) {
-  return REBIRTH.level + state.rebirths * REBIRTH.levelStep
+  return REBIRTH.level * REBIRTH.levelGrowth ** state.rebirths
 }
 
 // Strength gain multiplier after `rebirths` rebirths (default: the player's own).

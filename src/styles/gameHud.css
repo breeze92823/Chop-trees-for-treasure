@@ -1027,3 +1027,163 @@
 .chopper-btn.big { height: calc(100 * var(--s)); }
 .chopper-btn.static { cursor: default; }
 .chopper-gem { display: flex; align-items: center; gap: calc(8 * var(--s)); }
+
+/* --- Auras: bag button, auto-stop, buy roll, owned/locked index rows, My Auras page --- */
+.auras-bag { left: calc(80 * var(--s)); }
+.auras-stop { position: absolute; bottom: calc(10 * var(--s)); right: calc(14 * var(--s)); height: calc(46 * var(--s)); padding: 0 calc(14 * var(--s)); border-radius: calc(4 * var(--s)); }
+.auras-l-have { gap: calc(10 * var(--s)); }
+.auras-buy {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--s));
+  height: calc(46 * var(--s));
+  padding: 0 calc(8 * var(--s));
+  border: calc(4 * var(--s)) solid #15151a;
+  background: #46cf3a;
+  cursor: pointer;
+  font-family: inherit;
+}
+.auras-buy:hover { filter: brightness(1.15); }
+.aix-row.locked { opacity: 0.5; }
+.aix-check { position: absolute; right: calc(18 * var(--s)); bottom: calc(8 * var(--s)); color: #5dff4a; font-size: calc(34 * var(--s)); line-height: 1; text-shadow: 0 calc(2 * var(--s)) 0 #0c3a10; }
+.auras-owned-empty { position: absolute; left: 50%; top: calc(200 * var(--s)); translate: -50% 0; white-space: nowrap; }
+.auras-owned-emoji { position: absolute; left: calc(16 * var(--s)); top: calc(30 * var(--s)); }
+.auras-owned-name { position: absolute; left: calc(110 * var(--s)); top: calc(18 * var(--s)); }
+.auras-owned-stats { position: absolute; left: calc(110 * var(--s)); top: calc(82 * var(--s)); display: flex; gap: calc(22 * var(--s)); }
+.auras-owned-btn { position: absolute; right: calc(18 * var(--s)); top: calc(30 * var(--s)); width: calc(200 * var(--s)); height: calc(70 * var(--s)); border-radius: calc(4 * var(--s)); }
+
+/* --- Upgrades window (UpgradesMenu.jsx); reuses the Sell window frame + chopper list --- */
+.upgrades-title { width: calc(490 * var(--s)); padding-left: calc(150 * var(--s)); background-color: #a85ee8; }
+.upgrade-title-icon { position: absolute; left: calc(16 * var(--s)); top: calc(-34 * var(--s)); display: flex; }
+.upgrade-row {
+  position: relative;
+  flex: none;
+  width: calc(915 * var(--s));
+  height: calc(180 * var(--s));
+  box-sizing: border-box;
+  border: calc(4 * var(--s)) solid #15151a;
+  background: var(--studs), #a85ee8;
+  background-size: calc(24 * var(--s)) calc(24 * var(--s)), auto;
+  box-shadow: inset 0 0 0 calc(3 * var(--s)) rgba(255, 255, 255, 0.85);
+}
+.upgrade-icon { position: absolute; left: calc(40 * var(--s)); top: calc(30 * var(--s)); display: flex; }
+.upgrade-name { position: absolute; left: calc(240 * var(--s)); top: calc(10 * var(--s)); }
+.upgrade-level { position: absolute; left: calc(240 * var(--s)); top: calc(80 * var(--s)); }
+.upgrade-info { position: absolute; left: calc(240 * var(--s)); top: calc(112 * var(--s)); }
+.upgrade-btns { position: absolute; right: calc(16 * var(--s)); top: calc(20 * var(--s)); width: calc(210 * var(--s)); height: calc(134 * var(--s)); display: flex; flex-direction: column; justify-content: center; gap: calc(14 * var(--s)); }
+.upgrade-btn { width: 100%; height: calc(58 * var(--s)); border-radius: calc(3 * var(--s)); }
+.upgrade-btn.big { height: calc(100 * var(--s)); }
+.upgrade-btn.static { cursor: default; }
+.upgrade-gem { display: flex; align-items: center; gap: calc(8 * var(--s)); }
+
+/* --- Artifacts window (ArtifactsMenu.jsx); reuses the Sell window frame + chopper list --- */
+.artifacts-title { width: calc(490 * var(--s)); padding-left: calc(170 * var(--s)); background-color: #d9a05a; }
+.artifact-title-icon { position: absolute; left: calc(6 * var(--s)); top: calc(-26 * var(--s)); display: flex; }
+.artifact-row {
+  position: relative;
+  flex: none;
+  width: calc(915 * var(--s));
+  height: calc(180 * var(--s));
+  box-sizing: border-box;
+  border: calc(4 * var(--s)) solid #15151a;
+  background: var(--studs), var(--bgfill);
+  background-size: calc(24 * var(--s)) calc(24 * var(--s)), auto;
+  box-shadow: inset 0 0 0 calc(3 * var(--s)) rgba(255, 255, 255, 0.85);
+}
+.artifact-icon { position: absolute; left: calc(14 * var(--s)); top: calc(4 * var(--s)); width: calc(210 * var(--s)); height: calc(166 * var(--s)); display: flex; pointer-events: none; }
+.artifact-model { width: 100%; height: 100%; object-fit: contain; }
+.artifact-name { position: absolute; left: calc(240 * var(--s)); top: calc(6 * var(--s)); white-space: nowrap; line-height: 1.1; }
+.artifact-rarity { position: absolute; left: calc(240 * var(--s)); top: calc(62 * var(--s)); line-height: 1; }
+.artifact-stats {
+  position: absolute;
+  left: calc(240 * var(--s));
+  top: calc(96 * var(--s));
+  width: calc(440 * var(--s));
+  line-height: 1.05;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-auto-flow: column;
+  justify-content: start;
+  column-gap: calc(14 * var(--s));
+  row-gap: 0;
+}
+.artifact-stat { white-space: nowrap; line-height: 1.1; }
+.artifact-btns { position: absolute; right: calc(14 * var(--s)); top: calc(20 * var(--s)); width: calc(176 * var(--s)); height: calc(134 * var(--s)); display: flex; flex-direction: column; justify-content: center; gap: calc(14 * var(--s)); }
+.artifact-btn { width: 100%; height: calc(58 * var(--s)); border-radius: calc(3 * var(--s)); }
+.artifact-btn.big { height: calc(100 * var(--s)); }
+.artifact-gem { display: flex; align-items: center; gap: calc(8 * var(--s)); }
+
+/* --- Artifact craft page (ArtifactCraft.jsx): ingredients, recipe grid, CRAFT; reference px --- */
+.acraft { position: absolute; inset: 0; }
+.acraft-canvas { position: absolute !important; inset: 0; pointer-events: none; }
+.acraft-back { position: absolute; z-index: 3; left: calc(28 * var(--s)); top: calc(66 * var(--s)); width: calc(34 * var(--s)); height: calc(34 * var(--s)); padding: calc(4 * var(--s)); border-radius: calc(3 * var(--s)); box-sizing: border-box; }
+.acraft-title { position: absolute; left: 0; right: 0; top: calc(60 * var(--s)); text-align: center; display: flex; justify-content: center; }
+.acraft-label { position: absolute; left: calc(28 * var(--s)); top: calc(112 * var(--s)); }
+.acraft-row {
+  position: absolute;
+  left: calc(28 * var(--s));
+  width: calc(450 * var(--s));
+  height: calc(92 * var(--s));
+  box-sizing: border-box;
+  border: calc(4 * var(--s)) solid #15151a;
+  background: var(--studs), var(--bgfill);
+  background-size: calc(24 * var(--s)) calc(24 * var(--s)), auto;
+  box-shadow: inset 0 0 0 calc(3 * var(--s)) rgba(255, 255, 255, 0.85);
+}
+.acraft-row.wood { --bgfill: #c8862a; display: flex; align-items: center; }
+.acraft-name { position: absolute; left: calc(112 * var(--s)); top: calc(8 * var(--s)); }
+.acraft-have { position: absolute; left: calc(112 * var(--s)); top: calc(46 * var(--s)); }
+.acraft-wood-icon { position: absolute; left: calc(26 * var(--s)); top: calc(8 * var(--s)); display: flex; }
+.acraft-wood-text { position: absolute; left: calc(112 * var(--s)); top: calc(20 * var(--s)); }
+.acraft-grid {
+  position: absolute;
+  left: calc(548 * var(--s));
+  top: calc(160 * var(--s));
+  box-sizing: border-box;
+  width: calc(354 * var(--s));
+  height: calc(354 * var(--s));
+  padding: calc(12 * var(--s));
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(12 * var(--s));
+  border-radius: calc(10 * var(--s));
+  background: #2a2e3c;
+}
+.acraft-cell { border-radius: calc(8 * var(--s)); background: #1b1e29; border: calc(3 * var(--s)) solid #15151a; box-shadow: inset 0 0 0 calc(2 * var(--s)) rgba(255, 255, 255, 0.06); }
+.acraft-craft { position: absolute; left: calc(534 * var(--s)); top: calc(534 * var(--s)); width: calc(382 * var(--s)); height: calc(84 * var(--s)); border-radius: calc(3 * var(--s)); }
+
+/* --- Forge window (ForgeMenu.jsx) --- */
+.forge-body { flex: 1; min-height: 0; display: flex; gap: calc(22 * var(--s)); }
+.forge-pets { flex: 1; }
+.pet-card.dim { opacity: 0.35; cursor: default; }
+.pet-card.dim:hover { transform: none; }
+.pet-card-tier { position: absolute; top: calc(2 * var(--s)); left: 50%; transform: translateX(-50%); }
+.forge-side { width: calc(440 * var(--s)); display: flex; flex-direction: column; align-items: center; gap: calc(10 * var(--s)); }
+.forge-slots { display: flex; gap: calc(10 * var(--s)); }
+.forge-slot {
+  width: calc(120 * var(--s));
+  height: calc(120 * var(--s));
+  box-sizing: border-box;
+  display: grid;
+  border: calc(4 * var(--s)) solid #15151a;
+  background: #15171f var(--studs);
+  background-size: calc(24 * var(--s)) calc(24 * var(--s));
+  cursor: pointer;
+}
+.forge-slot .pet-card { width: 100%; height: 100%; border: 0; }
+.forge-chance {
+  position: relative;
+  width: 100%;
+  height: calc(50 * var(--s));
+  display: grid;
+  place-items: center;
+  background: rgba(10, 10, 16, 0.6);
+  overflow: hidden;
+}
+.forge-chance-fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#ff9a2a, #d8601a); transition: width 160ms; }
+.forge-chance-text { position: relative; }
+.forge-tiers { display: flex; flex-direction: column; align-items: center; gap: calc(2 * var(--s)); }
+.forge-tiers .t.on { scale: 1.08; }
+.forge-result { animation: egg-pop 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.forge-btn { width: 100%; height: calc(64 * var(--s)); display: flex; align-items: center; justify-content: center; gap: calc(12 * var(--s)); }
+.forge-cost { display: flex; align-items: center; gap: calc(4 * var(--s)); }

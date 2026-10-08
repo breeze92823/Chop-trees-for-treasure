@@ -28,12 +28,12 @@ export const TREE = {
 // Rebirth (systems/rebirth.js, components/RebirthMenu.jsx). Reaching `level`
 // lets the player rebirth: Strength and level go back to the start, and each
 // rebirth adds `strengthPer` to the Strength gain multiplier and `cashPer` to
-// the cash multiplier. Skip rebirths early for `skipRobux` Robux.
+// the cash multiplier. The level needed doubles with each rebirth. Skip rebirths early for `skipRobux` Robux.
 export const REBIRTH = {
-  level: 25, // level needed for the first rebirth
-  levelStep: 0, // extra levels needed for every rebirth already done
+  level: 25, // level needed for the first rebirth (rebirth 0 -> 1)
+  levelGrowth: 2, // each rebirth doubles it: 25, 50, 100, 200, 400 ...
   strengthPer: 0.5, // x1.0 -> x1.5 -> x2.0 ...
-  cashPer: 0.2, // x1.0 -> x1.2 -> x1.4 ...
+  cashPer: 0.5, // x1.0 -> x1.5 -> x2.0 ...
   skipRobux: 20,
 }
 
@@ -56,6 +56,20 @@ export const CHOPPER = {
   close: 7,
 }
 
+// Upgrades stall (systems/upgrades.js, components/UpgradesMenu.jsx): hold E within
+// `open` metres of it (world/layout.js STALLS 'upgrades'); past `close` the window shuts.
+export const UPGRADE = {
+  open: 3.5,
+  close: 7,
+}
+
+// Craft Artifacts bench (systems/artifacts.js, components/ArtifactsMenu.jsx): hold E within
+// `open` metres of it (world/layout.js CRAFT); past `close` the window shuts.
+export const ARTIFACT = {
+  open: 4.5,
+  close: 8,
+}
+
 // Auras stall (systems/auras.js, components/AurasMenu.jsx): hold E within `open`
 // metres of it (world/layout.js STALLS 'auras'); past `close` the window shuts.
 export const AURA = {
@@ -63,6 +77,10 @@ export const AURA = {
   close: 7,
   spinCost: 100000, // cash per spin
   autoMs: 1200, // Auto Spin pace
+  luckyRollRobux: 25, // Robux per Lucky Roll bought in the window
+  levelsPerRoll: 5, // a free Lucky Roll every this many levels gained (systems/strengthGain.js)
+  friendLuck: 1.5, // odds multiplier on Rare+ auras while a Bloxity friend is in the server
+  burstMs: 1400, // how long the stall flashes after a spin (world/AuraStallFx.jsx)
 }
 
 // Seconds into one chop cycle (systems/avatarAnim.js 'swing' pose; chop.js

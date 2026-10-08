@@ -5,7 +5,6 @@
 // components/ChopFx.jsx shows the "+wood" pop from onChop().
 import { CHOP, CHOP_TIMING } from '../data/economy.js'
 import { FOREST_TREES } from '../world/forestTrees.js'
-import { HUB } from '../world/layout.js'
 import { usePlayerData } from '../store/usePlayerData.js'
 import { useGameStore } from '../store/useGameStore.js'
 import { player } from './playerState.js'
@@ -17,6 +16,8 @@ import { playChopHit } from './sfx.js'
 import { woodMultiplier } from './pets.js'
 import { gainStrength } from './strengthGain.js'
 import { chopperStrength } from './choppers.js'
+import { rangeMultiplier, speedMultiplier } from './upgrades.js'
+import { emitPadHit, noticePad,padMultiplier, padUnlocked, strengthPadAt } from './strengthTrees.js'
 import { ALIVE, damageTree, install as installTrees, treePhase } from './treeHealth.js'
 
 let held = false
@@ -29,11 +30,12 @@ export function onChop(fn) {
 }
 
 // Closest standing tree in range (felled ones are skipped).
-const RANGE_SQ = CHOP.range * CHOP.range
 function nearestTree() {
+  const range = CHOP.range * rangeMultiplier()
+  const rangeSq = range * range
   const { x, y, z } = player.position
   let best = null
-  let bestD = RANGE_SQ
+  let bestD = rangeSq
   for (const t of FOREST_TREES) {
     if (treePhase[t.id] !== ALIVE || Math.abs(y - t.y) > 1.5) continue
     const dx = x - t.x
@@ -55,21 +57,24 @@ let sideBase = 0 // swings completed in earlier sessions, so the side keeps alte
 let cycleCount = 0 // swings since the pose started; parity picks the side (see chopSide)
 const IMPACT_MS = CHOP_TIMING.impact * 1000
 
-// Inside the hub a click swings at the air and still trains Strength (no tree, so no wood).
-function inHub() {
-  const { x, z } = player.position
-  return x >= HUB.minX && x <= HUB.maxX && z >= HUB.minZ && z <= HUB.maxZ
+// No tree in reach: a click still trains Strength, silently and without the swing pose.
+let nextIdleGain = 0
+function idleTrain(now) {
+  if (now < nextIdleGain) return
+  nextIdleGain = now + CHOP.cooldownMs / speedMultiplier()
+  const strength = gainStrength(chopperStrength())
+  for (const fn of listeners) fn(0, strength)
 }
 
 function land(tree) {
-  if (!tree) {
-    if (!inHub()) return
-    playChopHit()
-    const strength = gainStrength(chopperStrength())
+  playChopHit()
+  if (tree.mult && tree.pad) {
+    // Train Strength tree: never falls, Strength gain x the label's multiplier.
+    emitPadHit(tree)
+    const strength = gainStrength(chopperStrength() * padMultiplier(tree))
     for (const fn of listeners) fn(0, strength)
     return
   }
-  playChopHit()
   // Damage is the Strength held before this swing's gain; wood only drops when the tree falls.
   const felled = damageTree(tree, usePlayerData.getState().strength, player.position.x, player.position.z)
   const gain = felled ? Math.round(CHOP.wood * tree.mult * woodMultiplier()) : 0
@@ -89,7 +94,7 @@ function faceSideways(tree, side) {
   const dist = Math.hypot(dx, dz)
   player.facing = Math.atan2(dx, dz) - side * (CHOP_AIM + CHOP_HIT_TWIST)
   const gap = dist - CHOP.standDist
-  if (gap > 0.02 && dist > 0.001) {
+  if (!tree.pad && gap > 0.02 && dist > 0.001) {
     const stepLen = Math.min(gap, 0.06)
     const nx = p.x + (dx / dist) * stepLen
     const nz = p.z + (dz / dist) * stepLen
@@ -104,17 +109,27 @@ function faceSideways(tree, side) {
 
 function step() {
   const now = performance.now()
-  const wants = (held || useGameStore.getState().autoChop) && !isInputLocked()
+  const locked = isInputLocked()
+  // Standing on a Train Strength pad: swings by itself when the tree's price is met.
+  const pad = locked ? null : strengthPadAt()
+  noticePad(pad)
+  const padOpen = pad && padUnlocked(pad)
+  const wants = ((held || useGameStore.getState().autoChop) && !locked) || padOpen
   if (cycleStart === null && !wants) return // idle: skip the tree scan
-  const tree = nearestTree() // one scan per frame
+  const tree = padOpen ? pad : nearestTree() // one scan per frame
   if (cycleStart === null) {
-    if (!tree && !inHub()) return
+    if (!tree) {
+      if (held && !locked) idleTrain(now)
+      return
+    }
     cycleStart = now
     cycleCount = 0
     landed = false
     player.pose = 'swing'
   }
-  const elapsed = now - cycleStart
+  // Swing Speed (systems/upgrades.js) runs the whole cycle faster; `elapsed` is in unscaled cycle time.
+  const speed = speedMultiplier()
+  const elapsed = (now - cycleStart) * speed
   if (tree) faceSideways(tree, chopSide(sideBase + cycleCount, elapsed / 1000))
   if (!landed && elapsed >= IMPACT_MS) {
     landed = true
@@ -122,8 +137,8 @@ function step() {
   }
   if (elapsed >= CHOP.cooldownMs) {
     // Finish the whole cycle before stopping; loop straight on while held.
-    if (wants && (tree || inHub())) {
-      cycleStart += CHOP.cooldownMs
+    if (wants && tree) {
+      cycleStart += CHOP.cooldownMs / speed
       cycleCount++
       landed = false
     } else {

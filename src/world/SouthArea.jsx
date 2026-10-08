@@ -1,8 +1,9 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MAT, glow, plastic } from '../materials/world.js'
-import { CRAFT, EGGS, FORGE, FOUNTAIN, LAWN_TOP, PHOENIX_DISPLAY } from './layout.js'
-import { Figure, Label, LampPost, footprint, useColliders } from './common.jsx'
+import { CRAFT, EGGS, FOUNTAIN, LAWN_TOP, PHOENIX_DISPLAY } from './layout.js'
+import Forge from './Forge.jsx'
+import { Figure, Label, footprint, useColliders } from './common.jsx'
 import { spottedEggTexture, voidEggTexture } from './signs.js'
 
 // The south lawn, east to west: fountain, Craft Artifacts workbench + NPC,
@@ -263,62 +264,6 @@ function Fountain() {
       <mesh position={[0, 3.62, 0]} material={MAT.water}>
         <sphereGeometry args={[0.3, 12, 8]} />
       </mesh>
-    </group>
-  )
-}
-
-// --- Forge -------------------------------------------------------------------------
-function Barrel({ position }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.55, 0]} material={MAT.woodLight} castShadow>
-        <cylinderGeometry args={[0.45, 0.45, 1.1, 10]} />
-      </mesh>
-      {[0.2, 0.9].map((y) => (
-        <mesh key={y} position={[0, y, 0]} material={MAT.metal}>
-          <cylinderGeometry args={[0.47, 0.47, 0.08, 10]} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
-
-function Forge() {
-  const { x, z } = FORGE
-  useColliders([
-    { x0: x - 1.4, x1: x + 1.4, z0: z - 1.2, z1: z + 1.2, top: 6 },
-    { x0: x + 1.6, x1: x + 2.6, z0: z - 0.6, z1: z + 0.6, top: Y + 0.9 },
-  ])
-  const stone = plastic('#5d5f66', { flatShading: true })
-  return (
-    <group position={[x, Y, z]}>
-      {/* furnace, mouth facing the plaza (north) */}
-      <mesh position={[0, 1.1, 0]} material={stone} castShadow receiveShadow>
-        <boxGeometry args={[2.6, 2.2, 2.2]} />
-      </mesh>
-      <mesh position={[0, 0.8, -1.12]} rotation={[0, Math.PI, 0]} material={MAT.ember}>
-        <planeGeometry args={[1.2, 0.9]} />
-      </mesh>
-      <mesh position={[0.4, 3.6, 0.3]} material={stone} castShadow>
-        <boxGeometry args={[0.9, 2.8, 0.9]} />
-      </mesh>
-      <mesh position={[0.4, 5.05, 0.3]} material={MAT.ember}>
-        <boxGeometry args={[0.7, 0.1, 0.7]} />
-      </mesh>
-      {/* anvil */}
-      <group position={[2.1, 0, 0]}>
-        <mesh position={[0, 0.3, 0]} material={stone} castShadow>
-          <boxGeometry args={[0.6, 0.6, 0.6]} />
-        </mesh>
-        <mesh position={[0, 0.75, 0]} material={plastic('#2b2b31', { metalness: 0.5, roughness: 0.4 })} castShadow>
-          <boxGeometry args={[1.0, 0.3, 0.5]} />
-        </mesh>
-      </group>
-      <Barrel position={[-2, 0, -0.3]} />
-      <Barrel position={[-2.3, 0, 0.8]} />
-      <Barrel position={[-1.2, 0, 1.4]} />
-      <LampPost position={[2.6, 0, 1.5]} height={4.6} />
-      <Label lines={[{ text: 'Forge', size: 100, colors: ['#ffd27a', '#f07a12'], stroke: '#4a1c02' }]} position={[0, 6.6, 0]} height={1.1} />
     </group>
   )
 }

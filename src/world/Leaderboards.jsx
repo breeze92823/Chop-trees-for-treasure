@@ -1,9 +1,15 @@
+import { useEffect, useMemo } from 'react'
 import { MAT, surface } from '../materials/world.js'
 import { COLORS } from '../data/config.js'
 import { LEADER } from './layout.js'
 import { Slab } from './Ground.jsx'
-import { Figure, Label, LampPost, Sack, useColliders } from './common.jsx'
+import { LampPost, Sack, useColliders } from './common.jsx'
+import TopPlayerStatue from './TopPlayerStatue.jsx'
 import { bannerTexture, leaderboardTexture } from './signs.js'
+import { releaseTexture } from '../utils/textures.js'
+import { useLeaderboardStore } from '../store/useLeaderboardStore.js'
+import { usePlayerData } from '../store/usePlayerData.js'
+import { myPlayTime, mySessionId } from '../systems/net.js'
 
 // The Leaderboards hall at the east end of the plaza: a purple platform up
 // two steps, purple checkered walls, a tilted "Leaderboards" banner on two
@@ -13,6 +19,27 @@ const ARCH_X = LEADER.x0 + 1.4
 const PILLAR_Z = 15.6
 const PILLAR_H = 9
 const BOARD_X = 45
+
+// Board icon -> the server's leaderboard stat, and the local player's own value for it.
+const BOARD_STAT = {
+  rebirth: { stat: 'rebirths', own: () => usePlayerData.getState().rebirths },
+  cash: { stat: 'cash', own: () => usePlayerData.getState().cash },
+  arm: { stat: 'strength', own: () => usePlayerData.getState().strength },
+  trophy: { stat: 'playTime', own: myPlayTime },
+}
+
+// A board's face: the server's top players for its stat, plus a highlighted row for you. Redrawn
+// whenever the rows change (the server refreshes them every few seconds).
+function BoardFace({ title, icon, color }) {
+  const { stat, own } = BOARD_STAT[icon]
+  const rows = useLeaderboardStore((s) => s[stat])
+  const map = useMemo(() => {
+    const index = rows.findIndex((r) => r.id === mySessionId())
+    return leaderboardTexture(title, icon, color, rows, { rank: index >= 0 ? index + 1 : null, value: own() })
+  }, [rows, title, icon, color, own])
+  useEffect(() => () => releaseTexture(map), [map])
+  return <meshStandardMaterial map={map} roughness={0.8} />
+}
 
 export default function Leaderboards() {
   const { x0, x1, z0, z1, h, steps, boards, statues } = LEADER
@@ -26,7 +53,11 @@ export default function Leaderboards() {
     { x0, x1, z0: z0 - 0.6, z1: z0, top: 20 },
     { x0, x1, z0: z1, z1: z1 + 0.6, top: 20 },
     ...[-PILLAR_Z, PILLAR_Z].map((pz) => ({ x0: ARCH_X - 0.7, x1: ARCH_X + 0.7, z0: pz - 0.7, z1: pz + 0.7, top: 20 })),
-    ...statues.map((s) => ({ x0: BOARD_X, x1: BOARD_X + 1.6, z0: s.z - 0.8, z1: s.z + 0.8, top: top + 1.2 })),
+    ...boards.map((b) => {
+      const bx = BOARD_X + Math.abs(b.z) * 0.12
+      return { x0: bx - 0.6, x1: bx + 0.8, z0: b.z - 2.9, z1: b.z + 2.9, top: top + 7 }
+    }),
+    ...statues.map((s) => ({ x0: (s.x ?? BOARD_X + 0.8) - 0.8, x1: (s.x ?? BOARD_X + 0.8) + 0.8, z0: s.z - 0.8, z1: s.z + 0.8, top: top + 1.2 })),
   ])
 
   return (
@@ -64,24 +95,31 @@ export default function Leaderboards() {
               <boxGeometry args={[0.3, 2, 0.3]} />
             </mesh>
           ))}
-          <mesh position={[0, 3.9, -0.2]} material={MAT.woodDark} castShadow>
-            <boxGeometry args={[5.6, 4.4, 0.3]} />
-          </mesh>
-          <mesh position={[0, 3.9, -0.04]}>
-            <planeGeometry args={[5.3, 4.2]} />
-            <meshStandardMaterial map={leaderboardTexture(b.title, b.icon, b.color)} roughness={0.8} />
-          </mesh>
+          <group position={[0, 1.4, 0]} rotation={[-0.15, 0, 0]}>
+            <mesh position={[0, 2.5, -0.2]} material={MAT.woodDark} castShadow>
+              <boxGeometry args={[5.7, 4.8, 0.3]} />
+            </mesh>
+            <mesh position={[0, 2.5, -0.03]}>
+              <planeGeometry args={[5.5, 4.58]} />
+              <BoardFace title={b.title} icon={b.icon} color={b.color} />
+            </mesh>
+          </group>
         </group>
       ))}
 
       {/* #1 statues between the boards */}
       {statues.map((s, i) => (
-        <group key={i} position={[BOARD_X + 0.8, top, s.z]}>
-          <mesh position={[0, 0.6, 0]} material={MAT.stoneLight} castShadow receiveShadow>
-            <boxGeometry args={[1.6, 1.2, 1.6]} />
+        <group key={i} position={[s.x ?? BOARD_X + 0.8, top, s.z]}>
+          {/* round wooden plinth with a green rim */}
+          <mesh position={[0, 0.1, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[1.25, 1.35, 0.2, 32]} />
+            <meshStandardMaterial color="#3fb34a" roughness={0.7} />
           </mesh>
-          <Figure position={[0, 1.2, 0]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} shirt={s.color} pants={s.color} skin={s.color} hair={s.color} pose={i % 2 ? 'cheer' : 'stand'} />
-          <Label lines={[{ text: '#1', size: 80, colors: ['#fff3a0', '#ffc21a'], stroke: '#4a3000' }]} position={[0, 4.4, 0]} height={0.6} />
+          <mesh position={[0, 0.4, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[1.05, 1.2, 0.4, 32]} />
+            <meshStandardMaterial color="#e8a03a" roughness={0.8} />
+          </mesh>
+          <TopPlayerStatue stat={s.stat} title={s.title} position={[0, 0.6, 0]} rotation={[0, -Math.PI / 2, 0]} />
         </group>
       ))}
 

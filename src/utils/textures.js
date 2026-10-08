@@ -19,6 +19,13 @@ export function canvasTexture(key, w, h, draw, { repeat = false } = {}) {
   return texture
 }
 
+// Frees a texture made by canvasTexture() whose data changed (its key carries the data), so
+// stale ones do not pile up in the cache.
+export function releaseTexture(texture) {
+  for (const [key, t] of cache) if (t === texture) cache.delete(key)
+  texture.dispose()
+}
+
 // Cartoon sky dome (4096x2048 equirect): cyan gradient on top, six rows of
 // puffy cloud banks around the horizon, flat pale blue underneath.
 export function skyTexture() {

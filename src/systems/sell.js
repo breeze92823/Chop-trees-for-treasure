@@ -9,6 +9,7 @@ import { player } from './playerState.js'
 import { addSystem } from './loop.js'
 import { clearInteractTarget, setInteractTarget } from './interact.js'
 import { cashMultiplier } from './rebirth.js'
+import { artifactBonus } from './artifacts.js'
 import { showActionResult } from './actionResult.js'
 import { formatNumber } from '../utils/format.js'
 
@@ -16,7 +17,7 @@ const stall = STALLS.find((s) => s.id === 'sell')
 const KEY = 'sell:stall'
 
 export function openSellMenu() {
-  useGameStore.setState({ sellMenu: true, choppersMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, eggMenu: null, autoHatch: false })
+  useGameStore.setState({ sellMenu: true, artifactsMenu: false, upgradesMenu: false, choppersMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
 }
 
 export function closeSellMenu() {
@@ -38,7 +39,7 @@ export function groupBag(bag) {
 export const bagValue = (bag) => bag.reduce((n, it) => n + it.value, 0)
 
 // What `value` base $ pays out after the rebirth cash multiplier.
-export const payout = (value) => Math.round(value * cashMultiplier())
+export const payout = (value) => Math.round(value * cashMultiplier() * (1 + artifactBonus('cash')))
 
 function pay(items) {
   const s = usePlayerData.getState()

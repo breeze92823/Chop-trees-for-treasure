@@ -58,17 +58,17 @@ export const TRAIN = {
 // cost: 'free' | number; cur: 'rebirth' (red/white ball) or 'coin' (gold).
 export const STRENGTH_TREES = [
   // front row (tier 1)
-  { x: -24, z: -12.5, tier: 1, cost: 'free', cur: 'rebirth', mult: 'x1.5', pad: '#3fcf3a', kind: 'green' },
-  { x: -24, z: -6.5, tier: 1, cost: 2, cur: 'rebirth', mult: 'x2', pad: '#2f6df0', kind: 'blue' },
-  { x: -24, z: 0, tier: 1, cost: 11, cur: 'rebirth', mult: 'x8', pad: '#f0362f', kind: 'autumn' },
-  { x: -24, z: 6.5, tier: 1, cost: 5, cur: 'rebirth', mult: 'x4', pad: '#a36cf2', kind: 'lilac' },
-  { x: -24, z: 12.5, tier: 1, cost: 8, cur: 'rebirth', mult: 'x6', pad: '#2fbf3a', kind: 'palm' },
+  { x: -24, z: -12.5, tier: 1, cost: 'free', cur: 'rebirth', mult: 'x1.5', pad: '#7a3a1c', rim: '#5c5a6a', kind: 'green' },
+  { x: -24, z: -6.5, tier: 1, cost: 2, cur: 'rebirth', mult: 'x2', pad: '#1f55e0', rim: '#4a4e66', kind: 'blue' },
+  { x: -24, z: 0, tier: 1, cost: 11, cur: 'rebirth', mult: 'x8', pad: '#ff6a5a', rim: '#e01818', kind: 'autumn' },
+  { x: -24, z: 6.5, tier: 1, cost: 5, cur: 'rebirth', mult: 'x4', pad: '#7aa6f0', rim: '#c58bff', kind: 'lilac' },
+  { x: -24, z: 12.5, tier: 1, cost: 8, cur: 'rebirth', mult: 'x6', pad: '#22e022', rim: '#0a0a0a', kind: 'palm' },
   // back row (tier 2)
-  { x: -30, z: -12.5, tier: 2, cost: 1399, cur: 'coin', mult: 'x1000', pad: '#e8401f', kind: 'lava' },
-  { x: -30, z: -6.5, tier: 2, cost: 185, cur: 'coin', mult: 'x100', pad: '#26262c', kind: 'ghost' },
-  { x: -30, z: 0, tier: 2, cost: 19, cur: 'coin', mult: 'x10', pad: '#33d6ef', kind: 'ice' },
-  { x: -30, z: 6.5, tier: 2, cost: 45, cur: 'coin', mult: 'x25', pad: '#8a3ff0', kind: 'violet' },
-  { x: -30, z: 12.5, tier: 2, cost: 559, cur: 'coin', mult: 'x300', pad: '#35c23a', kind: 'jungle' },
+  { x: -30, z: -12.5, tier: 2, cost: 1399, cur: 'coin', mult: 'x1000', pad: '#2a1210', rim: '#3a2a28', kind: 'lava' },
+  { x: -30, z: -6.5, tier: 2, cost: 185, cur: 'coin', mult: 'x100', pad: '#0a0a0c', rim: '#f0f0f4', kind: 'ghost' },
+  { x: -30, z: 0, tier: 2, cost: 19, cur: 'coin', mult: 'x10', pad: '#33d6ef', rim: '#0a8fa8', kind: 'ice' },
+  { x: -30, z: 6.5, tier: 2, cost: 45, cur: 'coin', mult: 'x25', pad: '#2fd02f', rim: '#8a3ff0', kind: 'violet' },
+  { x: -30, z: 12.5, tier: 2, cost: 559, cur: 'coin', mult: 'x300', pad: '#6a3a22', rim: '#2fa02f', kind: 'jungle' },
 ]
 
 // Choppable forest in 20 luck zones (all at ground level, running straight into each other), each nine tree rows deep (spacing 4.4 from z0 = -27).
@@ -127,12 +127,13 @@ export const LEADER = {
     { title: 'TOP REBIRTHS', icon: 'rebirth', z: -13, color: '#e8332e' },
     { title: 'TOP CASH', icon: 'cash', z: -4.6, color: '#2fbf3a' },
     { title: 'TOP STRENGTH', icon: 'arm', z: 4.6, color: '#f39a1d' },
-    { title: 'TOP TIME PLAYED', icon: 'clock', z: 13, color: '#e8b21d' },
+    { title: 'TOP TIME PLAYED', icon: 'trophy', z: 13, color: '#e8b21d' },
   ],
   statues: [
-    { z: -8.8, color: '#26262c' },
-    { z: 0, color: '#f2efe6' },
-    { z: 8.8, color: '#26262c' },
+    { z: -8.8, color: '#26262c', stat: 'rebirths', title: '#1 REBIRTHS' },
+    { z: 0, color: '#f2efe6', stat: 'cash', title: '#1 CASH' },
+    { z: 8.8, color: '#26262c', stat: 'strength', title: '#1 STRENGTH' },
+    { z: 16.6, x: 44.2, color: '#f2c94c', stat: 'playTime', title: '#1 TIME PLAYED' }, // x pulled toward the plaza so it clears the Time Played board
   ],
 }
 

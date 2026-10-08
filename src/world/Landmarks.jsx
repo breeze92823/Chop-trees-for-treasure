@@ -4,7 +4,7 @@ import { AdditiveBlending, DoubleSide } from 'three'
 import { glow, plastic } from '../materials/world.js'
 import { canvasTexture } from '../utils/textures.js'
 import { LAWN_TOP, PORTAL } from './layout.js'
-import { Label, LampPost, Sack, Stump, footprint, useColliders } from './common.jsx'
+import { Label, LampPost, Sack, Stump, useColliders } from './common.jsx'
 
 // WORLDS portal: a glowing pink oval ring on a stepped round base, with a
 // slowly turning swirl inside. Faces the plaza centre.
@@ -161,11 +161,7 @@ function Flowers({ position, count }) {
 
 export function Scatter() {
   useColliders([
-    ...STUMPS.map(([x, z, s]) => ({ x0: x - 0.5 * s, x1: x + 0.5 * s, z0: z - 0.5 * s, z1: z + 0.5 * s, top: LAWN_TOP + 0.6 * s })),
-    ...LAMPS.map(([x, z]) => ({ x0: x - 0.3, x1: x + 0.3, z0: z - 0.3, z1: z + 0.3, top: LAWN_TOP + 3.6 })),
-    ...BENCHES.map(([x, z, yaw]) => footprint(x, z, 2.4, 0.7, yaw, LAWN_TOP + 0.5)),
-    ...BUSHES.map(([x, z, s]) => ({ x0: x - 0.6 * s, x1: x + 0.6 * s, z0: z - 0.6 * s, z1: z + 0.6 * s, top: LAWN_TOP + 1 * s })),
-  ])
+    ...LAMPS.map(([x, z]) => ({ x0: x - 0.3, x1: x + 0.3, z0: z - 0.3, z1: z + 0.3, top: LAWN_TOP + 3.6 })),  ])
   return (
     <group>
       {SACKS.map(([x, z, r, s], i) => <Sack key={i} position={[x, LAWN_TOP, z]} rotation={r} scale={s} />)}

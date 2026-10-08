@@ -11,6 +11,7 @@ import { makeGait, updateGait, disposeGait } from '../systems/avatarAnim.js'
 import { usePlayerData } from '../store/usePlayerData.js'
 import { equippedPetIds } from '../systems/pets.js'
 import PetFollowers from './PetFollowers.jsx'
+import AuraFx from './AuraFx.jsx'
 
 const _up = new Vector3(0, 1, 0)
 const _targetQuat = new Quaternion()
@@ -88,6 +89,7 @@ export default function Player() {
   const avatar = useBloxityAvatar()
   const gaitRef = useRef(null)
   const pets = usePlayerData((s) => equippedPetIds(s).join(','))
+  const aura = usePlayerData((s) => s.aura)
 
   // Rebuilt per loaded avatar — the gait's cached bind-pose quaternions
   // (see avatarAnim.js) belong to one specific rig instance.
@@ -120,6 +122,7 @@ export default function Player() {
     <>
       <group ref={ref}>
         <primitive object={avatar} />
+        <AuraFx id={aura} />
       </group>
       <PetFollowers ids={pets ? pets.split(',') : []} anchor={localAnchor} />
     </>

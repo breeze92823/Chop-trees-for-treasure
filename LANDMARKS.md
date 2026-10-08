@@ -66,20 +66,22 @@ Component: [TrainingArea.jsx](src/world/TrainingArea.jsx). Layout keys: `TRAIN`,
 
 ### Strength Trees
 
-Each one sits on a coloured **pad** and has a floating price + multiplier label. `kind` picks the leaf palette (`KINDS` in TrainingArea.jsx).
+Each one sits on a coloured **pad** and has a floating price + multiplier label. The tree itself (twisting trunk, roots, forked branches, leaf clumps, per-kind particles and glow halo) lives in [StrengthTree.jsx](src/world/StrengthTree.jsx); `kind` picks its look from `KINDS` there. Pad colours (`pad` inside, `rim` frame) are in `STRENGTH_TREES`; lava/ghost/ice/violet also get a glowing inner frame.
+
+Standing on a pad's dark base slab (3.4 m square) swings the axe at the tree with no click ([systems/strengthTrees.js](src/systems/strengthTrees.js), driven from chop.js). The tree never falls and each swing's Strength is multiplied by the label's "x" value. The label's price is a minimum: rebirths for rebirth trees, held `cash` for coin trees. Below it, entering the slab shows an error and no swing starts.
 
 | Name | Row | Position | Price | Gives | Pad | `kind` |
 |---|---|---|---|---|---|---|
-| **Free Tree** | front | (−24, −12.5) | FREE (rebirth) | x1.5 | green | `green` |
-| **Blue Tree** | front | (−24, −6.5) | 2 rebirths | x2 | blue | `blue` |
-| **Autumn Tree** | front, centre | (−24, 0) | 11 rebirths | x8 | red | `autumn` |
-| **Lilac Tree** | front | (−24, 6.5) | 5 rebirths | x4 | lilac | `lilac` |
-| **Palm Tree** | front | (−24, 12.5) | 8 rebirths | x6 | green | `palm` |
-| **Lava Tree** | back | (−30, −12.5) | 1399 coins | x1000 | red-orange | `lava` |
-| **Ghost Tree** | back | (−30, −6.5) | 185 coins | x100 | black | `ghost` |
-| **Ice Tree** | back, centre | (−30, 0) | 19 coins | x10 | cyan | `ice` |
-| **Violet Tree** | back | (−30, 6.5) | 45 coins | x25 | purple | `violet` |
-| **Jungle Tree** | back | (−30, 12.5) | 559 coins | x300 | green | `jungle` |
+| **Free Tree** | front | (−24, −12.5) | FREE (rebirth) | x1.5 | brown, grey rim | `green` |
+| **Blue Tree** | front | (−24, −6.5) | 2 rebirths | x2 | blue, grey rim | `blue` |
+| **Autumn Tree** | front, centre | (−24, 0) | 11 rebirths | x8 | salmon, red rim | `autumn` |
+| **Lilac Tree** | front | (−24, 6.5) | 5 rebirths | x4 | light blue, lilac rim | `lilac` |
+| **Palm Tree** | front | (−24, 12.5) | 8 rebirths | x6 | bright green, black rim | `palm` |
+| **Lava Tree** | back | (−30, −12.5) | 1399 coins | x1000 | charred, glowing lava edge | `lava` |
+| **Ghost Tree** | back | (−30, −6.5) | 185 coins | x100 | black, white rim | `ghost` |
+| **Ice Tree** | back, centre | (−30, 0) | 19 coins | x10 | cyan, glowing edge | `ice` |
+| **Violet Tree** | back | (−30, 6.5) | 45 coins | x25 | green, purple rim | `violet` |
+| **Jungle Tree** | back | (−30, 12.5) | 559 coins | x300 | brown, green rim | `jungle` |
 
 ## Forest (north)
 
@@ -109,11 +111,11 @@ Component: [Leaderboards.jsx](src/world/Leaderboards.jsx). Layout key: `LEADER`.
 | **Top Cash Board** | z −4.6 | `LEADER.boards[1]` |
 | **Top Strength Board** | z 4.6 | `LEADER.boards[2]` |
 | **Top Time Played Board** | z 13 | `LEADER.boards[3]` |
-| **Leaderboard Statues** | z −8.8 (black), 0 (white), 8.8 (black) | #1-player figures on stone pedestals (`LEADER.statues`). |
+| **Leaderboard Statues** | z −8.8 (Rebirths), 0 (Cash), 8.8 (Strength), 16.6 at x 44.2 (Time Played) | Each board's #1 player as a 3D Bloxity character on a round plinth (`TopPlayerStatue.jsx`; avatar comes from the server's #1 row, default character when solo/offline). |
 | **Leaderboard Lamps** | front edge at z −8.8, 0, 8.8 | Three lamp posts. |
 | **Leaderboard Sacks** | foot of the steps, z ≈ ±12 | Treasure sack piles. |
 
-Board contents (rows, names, values, "Refreshes in") are painted by `leaderboardTexture` in [signs.js](src/world/signs.js).
+Board contents are the server's top 10 per stat (`TOP REBIRTHS`, `TOP CASH`, `TOP STRENGTH`, `TOP TIME PLAYED`) plus a highlighted "You" row, kept in [useLeaderboardStore.js](src/store/useLeaderboardStore.js) by [net.js](src/systems/net.js) and painted by `leaderboardTexture` in [signs.js](src/world/signs.js) (redrawn by `BoardFace` in Leaderboards.jsx whenever the rows change).
 
 ## South side
 
@@ -125,9 +127,9 @@ Component: [SouthArea.jsx](src/world/SouthArea.jsx).
 | **Spotted Egg** | (0.8, 21) | `EGGS.list[0]` | White with rainbow spots; label "25K" with the log icon. |
 | **Void Egg** | (−3.8, 21) | `EGGS.list[1]` | Black with glowing cyan cracks; label "11" with the Robux icon. |
 | **Phoenix Display** | (5.5, 19) | `PHOENIX_DISPLAY` | Pink pad, flapping Blazing Phoenix, label "250% Stronger than Best Pet!". |
-| **Craft Bench** | (11.5, 20), faces north | `CRAFT` | Workbench with saw, hammer, plank and pink artifact gem; **Craftsman** NPC behind it; "Craft Artifacts" label. |
+| **Craft Bench** | (11.5, 20), faces north | `CRAFT` | Workbench with saw, hammer, plank and pink artifact gem; **Craftsman** NPC behind it; "Craft Artifacts" label. Hold E within `ARTIFACT.open` m opens the **Artifacts Window** (`components/ArtifactsMenu.jsx`, `systems/artifacts.js`, items in `data/artifacts.js`). |
 | **Fountain** | (21, 18) | `FOUNTAIN` | Three-tier stone fountain with water. |
-| **Forge** | (−16, 21.5) | `FORGE` | Stone furnace with glowing mouth, chimney, anvil, 3 barrels, tall lamp post; "Forge" label. |
+| **Forge** | (−16, 21.5) | `FORGE` | `world/Forge.jsx`: two brown spire towers with X-braced lit lanterns + flames, stepped dark furnace with bomb, chimney smoke and bar-chart plaque, lava pool + chest plaque facing the plaza, slab ramp (W), lamp post, 3 barrels, orange sack, boulder (E); embers, sparks, halos and flickering point lights; "Forge" label. Hold E at the lava pool opens the Forge window (`systems/forge.js`, `components/ForgeMenu.jsx`, `data/forge.js`): fuse up to 3 identical pets for a chance at the next tier (Golden +50%, Diamond +150%, Void +250% power); `ForgeFlare` bursts on every fuse. |
 
 ## Other landmarks
 
@@ -138,11 +140,11 @@ Component: [Landmarks.jsx](src/world/Landmarks.jsx) unless noted.
 | **WORLDS Portal** | (27, −19.5) | `PORTAL` | Pink stepped base, glowing oval ring, spinning swirl, "WORLDS" label. It always turns to face the plaza centre (`PORTAL.face` is not used). |
 | **Sword Display** | (−14.5, −16) | `SWORD_DISPLAY` | Pink pad with a floating crystal sword; label "750% Stronger than Best Chopper! / +17 Strength / 839". Built in SouthArea.jsx (`SwordDisplay`). |
 | **Treasure Sacks** | mostly behind the Sell Treasure Stall | `SACKS` in Landmarks.jsx | `[x, z, rotation, scale]` |
-| **Stumps** | around the stalls and training steps | `STUMPS` in Landmarks.jsx | `[x, z, scale]`; each is a small collider. |
+| **Stumps** | around the stalls and training steps | `STUMPS` in Landmarks.jsx | `[x, z, scale]`; no collider (walk through). |
 | **Lamp posts** | plaza, north approach (x ±7.5, z −7/−15/−21) and spawn square (z 8/14) | `LAMPS` in Landmarks.jsx | Fill the bare plaza; colliders. |
-| **Street lamps (evening)** | central path x ±3, stalls, egg area, plaza edges | `LAMPS` in world/Lamps.jsx, `LAMP` in data/config.js | Glowing lamps; nearest 6 cast real point light. Evening sky/fog/sun in `LIGHT`, `FOG`, `skyTexture`. |
-| **Benches** | plaza, x ±5 at z −11/−18 and 11.5 | `BENCHES` in Landmarks.jsx | `[x, z, yaw]`; colliders. |
-| **Bushes** | lawn edges and the empty NE/SE lawn space | `BUSHES` in Landmarks.jsx | `[x, z, scale]`; colliders. |
+| **Street lamps (evening)** | central path x ±3, stalls, egg area, plaza edges | `LAMPS` in world/Lamps.jsx, `LAMP` in data/config.js | Glowing lamps (no collider: player and camera pass through); nearest 6 cast real point light. Evening sky/fog/sun in `LIGHT`, `FOG`, `skyTexture`. |
+| **Benches** | plaza, x ±5 at z −11/−18 and 11.5 | `BENCHES` in Landmarks.jsx | `[x, z, yaw]`; no collider (walk through). |
+| **Bushes** | lawn edges and the empty NE/SE lawn space | `BUSHES` in Landmarks.jsx | `[x, z, scale]`; no collider (walk through). |
 | **Flower beds** | scattered on the lawns | `FLOWERS` in Landmarks.jsx | `[x, z, count]`; decorative, no collider. |
 
 ## Shared building blocks
@@ -172,6 +174,9 @@ Component: [GameHud.jsx](src/components/GameHud.jsx). Styles: [gameHud.css](src/
 | **Index Window** | centre | [IndexMenu.jsx](src/components/IndexMenu.jsx) / `.index-menu` | Treasure Index: every loot item by rarity, 4 per row; every item has a tile with its rarity; collected ones show a spinning 3D model (a small orthographic canvas over the grid) and name, the rest a red "?" only. The grid scrolls. "Each discovered treasure grants x1.025 strength" + Current Bonus ([treasureIndex.js](src/systems/treasureIndex.js), `INDEX` in [economy.js](src/data/economy.js)) |
 | **Sell Treasure Window** | centre | [SellMenu.jsx](src/components/SellMenu.jsx) / `.sell-menu` | Opened by hold-E at the Sell Treasure stall ([sell.js](src/systems/sell.js)): bag total, Sell All, one row per item with Sell. Tunables `SELL` in [economy.js](src/data/economy.js) |
 | **Choppers Window** | centre | [ChoppersMenu.jsx](src/components/ChoppersMenu.jsx) / `.choppers-menu` | Opened by hold-E at the Choppers stall ([choppers.js](src/systems/choppers.js)): 28 axes from [choppers.js](src/data/choppers.js) (icons in public/ui/choppers/) with name, rarity, +Strength per swing, Equip / Equipped / cash and gem prices. The equipped axe sets base Strength per swing and its 3D model ([axeModels.js](src/systems/axeModels.js)) replaces the held axe |
-| **Auras Window** | centre | [AurasMenu.jsx](src/components/AurasMenu.jsx) / `.auras-menu` | Opened by hold-E at the Auras stall ([auras.js](src/systems/auras.js)): equipped aura, Auto Spin / Spin ($100K) / Lucky Roll, Mythic and Secret pity. Aura odds in [auras.js](src/data/auras.js), tunables `AURA` in [economy.js](src/data/economy.js) |
+| **Upgrades Window** | centre | [UpgradesMenu.jsx](src/components/UpgradesMenu.jsx) / `.upgrades-menu` | Opened by hold-E at the Upgrades stall ([upgrades.js](src/systems/upgrades.js)): purple rows from [upgrades.js](src/data/upgrades.js) — Swing Range (+5%/lvl chop radius), Swing Speed (+2.5%/lvl swing rate), Backpack Slots (+1 bag slot/lvl), Movement Speed (+5%/lvl run speed), Egg Luck (+0.25%/lvl Legendary odds), Equip Pets (+1 pet slot/lvl) — each with level, cash price and Robux price; levels saved in `usePlayerData` `upgrades` |
+| **Auras Window** | centre | [AurasMenu.jsx](src/components/AurasMenu.jsx) / `.auras-menu` | Opened by hold-E at the Auras stall ([auras.js](src/systems/auras.js)): equipped aura, Auto Spin / Spin ($100K) / Lucky Roll, Mythic and Secret pity. Bag button = **My Auras** page (equip / unequip owned auras), `i` = Index (owned ✔ / locked dimmed), Auto Spin stop-at-rarity button, `+25` buys a Lucky Roll (also +1 every 5 levels), friends in server boost Rare+ odds. Aura odds in [auras.js](src/data/auras.js), tunables `AURA` in [economy.js](src/data/economy.js) |
+| **Aura Effect** | on every character | [AuraFx.jsx](src/components/AuraFx.jsx) | Ring, glow disc and rising sparks in the equipped aura's colour on the local player and (via `setAura` in net.js / the server's `aura` field) on remote players |
+| **Auras Stall Flash** | Auras stall | [AuraStallFx.jsx](src/world/AuraStallFx.jsx) | Glow while the window is open; coloured light + expanding ring after each spin |
 | **Stats Panel** | bottom left | `Stats` / `.stat` | Wood 460, Backpack 0/3, Rebirths (live), Cash (live) |
 | **Status Line** | bottom-right corner | [Hud.jsx](src/components/Hud.jsx) / `.hud` | Player name and online/offline status (from the base project) |

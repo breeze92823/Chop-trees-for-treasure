@@ -8,11 +8,18 @@
 //   remote : syncRoster() mirrors the other players into `remotes` and
 //            useRemoteStore; components/RemotePlayers.jsx draws each one with
 //            the same avatar + gait code as the local player.
+//
+// Progress sync: a signed-in account's store/usePlayerData.js is hydrated from
+// the server's `progress` reply on join (a new account answers `noProgress`
+// and its local state is pushed instead), then saved back, debounced, as
+// `saveProgress`. Guests are never saved server-side. The server also
+// broadcasts the `leaderboard` boards (store/useLeaderboardStore.js).
 // Offline (server unreachable) the game simply runs single-player and keeps
 // retrying in the background; nothing here may throw outward.
 import { Client } from '@colyseus/sdk'
 import { useGameStore } from '../store/useGameStore.js'
 import { useRemoteStore } from '../store/useRemoteStore.js'
+import { useLeaderboardStore } from '../store/useLeaderboardStore.js'
 import { remotes } from './remotePlayers.js'
 import { player } from './playerState.js'
 import {
@@ -26,7 +33,7 @@ import {
   subscribeAuth,
 } from './bloxity.js'
 import { DEV_MODE } from '../data/bloxity.js'
-import { usePlayerData } from '../store/usePlayerData.js'
+import { usePlayerData, SAVED_KEYS } from '../store/usePlayerData.js'
 import { equippedPetIds } from './pets.js'
 import { pushAnnouncement } from './announce.js'
 import { GAME_SLUG, NET } from '../data/config.js'
@@ -41,6 +48,9 @@ const AVATAR_MAX_LEN = 3000 // keep in step with the server's constants.ts
 const ROSTER_MS = 200
 const JOIN_TIMEOUT_MS = 8000 // first attempt; after this the game plays offline while retrying
 const RETRY_MS = [2000, 4000, 8000, 15000]
+const SAVE_DEBOUNCE_MS = 2000
+const SAVE_MAX_BYTES = 120000 // the server drops a message over its 128 KB cap (constants.ts MAX_PAYLOAD_BYTES)
+const HYDRATE_WAIT_MS = 6000 // no progress/noProgress reply by then: go online with the local save, unsynced
 
 let room = null
 let started = false
@@ -50,6 +60,12 @@ let lastPose = ''
 let lastSig = ''
 let joinedAs = ''
 let lastPets = null
+let lastAura = null
+let hydrated = false // the server's answer for this identity has been applied; saves are allowed
+let saveTimer = 0
+let lastSaved = ''
+let playTimeBase = 0 // saved playtime (s) at playTimeAt, from the `progress` reply
+let playTimeAt = 0
 
 // Dev builds and guests have no Bloxity id; a per-browser id keeps one stable.
 function localGuestId() {
@@ -115,6 +131,44 @@ function sendPose() {
   room.send('pose', msg)
 }
 
+function pickSaved(state) {
+  const data = {}
+  for (const k of SAVED_KEYS) data[k] = state[k]
+  return data
+}
+
+// Server doc -> usePlayerData. The server wins; nested records are merged so a key the doc lacks
+// keeps its default.
+function applyProgress(doc) {
+  const s = usePlayerData.getState()
+  const patch = {}
+  for (const k of SAVED_KEYS) if (doc[k] !== undefined) patch[k] = doc[k]
+  patch.upgrades = { ...s.upgrades, ...doc.upgrades }
+  patch.passes = { ...s.passes, ...doc.passes }
+  usePlayerData.setState(patch)
+}
+
+function saveNow() {
+  clearTimeout(saveTimer)
+  saveTimer = 0
+  if (!room || !hydrated) return
+  const data = pickSaved(usePlayerData.getState())
+  const json = JSON.stringify(data)
+  if (json === lastSaved) return
+  if (json.length > SAVE_MAX_BYTES) return console.warn('[net] save too large for the server, skipped')
+  lastSaved = json
+  room.send('saveProgress', data)
+}
+
+function onDataChange() {
+  if (!room || !hydrated || saveTimer) return
+  saveTimer = setTimeout(saveNow, SAVE_DEBOUNCE_MS)
+}
+
+// Seconds the account has played in total: the saved total plus this session.
+export const myPlayTime = () => (room ? playTimeBase + (Date.now() - playTimeAt) / 1000 : 0)
+export const mySessionId = () => room?.sessionId ?? ''
+
 // Equipped pets as comma-joined data/eggs.js ids, so every client can draw
 // them following this player (components/PetFollowers.jsx).
 function sendPets() {
@@ -123,6 +177,16 @@ function sendPets() {
   if (pets === lastPets) return
   lastPets = pets
   room.send('setPets', { pets })
+}
+
+// The equipped aura id ("" = none), drawn around this player by every client
+// (components/AuraFx.jsx).
+function sendAura() {
+  if (!room) return
+  const aura = usePlayerData.getState().aura || ''
+  if (aura === lastAura) return
+  lastAura = aura
+  room.send('setAura', { aura })
 }
 
 // Our own epic+ hatch: shown here at once, and relayed to everyone else.
@@ -180,9 +244,41 @@ async function connect() {
     joinedAs = currentUserId()
     lastPose = ''
     lastPets = null
-    setStatus('online')
+    lastAura = null
+    lastSaved = ''
+    playTimeBase = 0
+    playTimeAt = Date.now()
     sendPose()
     sendPets()
+    sendAura()
+    // 'online' (which releases the loading screen) waits for the server's answer so the first frame
+    // shows the saved progress, not a fresh game.
+    const goOnline = () => setStatus('online')
+    setTimeout(() => room === r && goOnline(), HYDRATE_WAIT_MS)
+    r.onMessage('progress', (doc) => {
+      // A reconnect: the local state is newer than the saved doc, so push it instead of re-hydrating.
+      const reconnect = hydrated
+      if (!reconnect) applyProgress(doc)
+      playTimeBase = Number(doc.playTime) || 0
+      playTimeAt = Date.now()
+      hydrated = true
+      lastSaved = reconnect ? '' : JSON.stringify(pickSaved(usePlayerData.getState()))
+      if (reconnect) saveNow()
+      goOnline()
+    })
+    r.onMessage('noProgress', () => {
+      // A new account (or a guest, or a server without a database): keep the local state and store it.
+      hydrated = true
+      lastSaved = ''
+      saveNow()
+      goOnline()
+    })
+    r.onMessage('serverError', () => {
+      // The saved document could not be read: stay unhydrated (never overwrite it) and retry.
+      console.warn('[net] could not load saved progress, retrying')
+      r.leave()
+    })
+    r.onMessage('leaderboard', (boards) => useLeaderboardStore.setState(boards))
     r.onMessage('hatched', (msg) => {
       if (!Array.isArray(msg?.pets)) return
       for (const id of msg.pets) pushAnnouncement(msg.username, id)
@@ -214,6 +310,10 @@ export function startNet() {
   setInterval(sendPose, 1000 / NET.sendHz)
   setInterval(syncRoster, ROSTER_MS)
   usePlayerData.subscribe(sendPets)
+  usePlayerData.subscribe(sendAura)
+  usePlayerData.subscribe(onDataChange)
+  window.addEventListener('pagehide', saveNow)
+  document.addEventListener('visibilitychange', () => document.hidden && saveNow())
 
   // Wait for Bloxity auth to settle so the real account id (not a guest id) is used.
   let begun = false
@@ -233,6 +333,8 @@ export function startNet() {
     const id = currentUserId()
     if (!room || !begun || id === joinedAs) return
     joinedAs = id
+    saveNow() // the final save under the old identity
+    hydrated = false
     room.send('identify', { userId: id, username: getDisplayName() })
     room.send('setAvatar', { avatar: avatarJson() })
   })

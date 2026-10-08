@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber'
 import { AdditiveBlending, CanvasTexture } from 'three'
 import { LAMP } from '../data/config.js'
 import { player } from '../systems/playerState.js'
-import { useColliders } from './common.jsx'
 
 // Evening street lamps. Posts, heads and glow halos are cheap meshes for every
 // lamp; only the LAMP.pool nearest to the player get a real point light (a fixed
@@ -41,7 +40,6 @@ const glowMap = (() => {
 })()
 
 export default function Lamps() {
-  useColliders(LAMPS.map((l) => ({ x0: l.x - 0.15, x1: l.x + 0.15, z0: l.z - 0.15, z1: l.z + 0.15, top: l.y + POST_H })))
 
   const lights = useRef([])
   const order = useMemo(() => LAMPS.map((_, i) => i), [])

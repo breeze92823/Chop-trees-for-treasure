@@ -7,6 +7,7 @@ import { useGameStore } from '../store/useGameStore.js'
 import { usePlayerData } from '../store/usePlayerData.js'
 import { showActionResult } from './actionResult.js'
 import { petInfo, petKey, petSlots } from './pets.js'
+import { eggLuckBonus } from './upgrades.js'
 import { announceHatch, friendInServer } from './net.js'
 import { formatNumber } from '../utils/format.js'
 
@@ -22,7 +23,14 @@ export function currentOdds(kind, luck = isLuckActive()) {
   const factor = (luck ? LUCK.factor : 1) * (friendInServer() ? LUCK.friends : 1)
   const weights = pets.map((p) => p.chance * (LUCK.rarities.includes(p.rarity) ? factor : 1))
   const total = weights.reduce((a, b) => a + b, 0) || 1
-  return pets.map((p, i) => ({ ...p, chance: (weights[i] / total) * 100 }))
+  const odds = pets.map((p, i) => ({ ...p, chance: (weights[i] / total) * 100 }))
+  // Egg Luck upgrade: Legendary pets gain points, everything else shrinks to make room.
+  const legendary = odds.filter((p) => p.rarity === 'Legendary')
+  const have = legendary.reduce((a, p) => a + p.chance, 0)
+  const extra = legendary.length ? Math.min(eggLuckBonus(), 100 - have - 0.001) : 0
+  if (extra <= 0) return odds
+  const squeeze = (100 - have - extra) / (100 - have)
+  return odds.map((p) => ({ ...p, chance: p.rarity === 'Legendary' ? p.chance + (extra * p.chance) / have : p.chance * squeeze }))
 }
 
 function roll(odds) {

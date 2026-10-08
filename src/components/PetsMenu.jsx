@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useGameStore } from '../store/useGameStore.js'
 import { usePlayerData } from '../store/usePlayerData.js'
 import { PET_INVENTORY_MAX, RARITY_BG } from '../data/eggs.js'
-import { deletePet, equipBest, petInfo, petMultiplier, petSlots, sortedPets, toggleEquip } from '../systems/pets.js'
+import { FORGE_TIERS } from '../data/forge.js'
+import { deletePet, equipBest, petInfo, petMultiplier, petPower, petSlots, petTier, sortedPets, toggleEquip } from '../systems/pets.js'
 import { playButtonClick } from '../systems/sfx.js'
 import { RAINBOW, grad, T, stop, Btn, Emoji } from './hudParts.jsx'
 
@@ -22,14 +23,15 @@ function PetCard({ pet, equipped, armed, onArm }) {
     <div
       className={`pet-card${equipped ? ' equipped' : ''}`}
       style={{ '--bg': RARITY_BG[info.rarity] }}
-      title={info.name}
+      title={`${petTier(pet) ? `${FORGE_TIERS[petTier(pet)].name} ` : ''}${info.name}`}
       onClick={() => {
         playButtonClick()
         toggleEquip(pet.id)
       }}
     >
       <Emoji size={64}>{info.emoji}</Emoji>
-      <T size={20} w={3} fill={info.rarity === 'legendary' ? RAINBOW : undefined} className="pet-card-power">{`+${Math.round(info.power * 100)}%`}</T>
+      <T size={20} w={3} fill={info.rarity === 'legendary' ? RAINBOW : undefined} className="pet-card-power">{`+${Math.round(petPower(pet) * 100)}%`}</T>
+      {petTier(pet) > 0 && <T size={18} w={3} fill={grad(FORGE_TIERS[petTier(pet)].color)} className="pet-card-tier">{FORGE_TIERS[petTier(pet)].name}</T>}
       {equipped && <span className="pet-card-check">✔</span>}
       {!equipped && (
         <button

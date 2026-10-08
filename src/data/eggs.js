@@ -76,7 +76,7 @@ export const EGG_BOOSTS = [
   { id: 'wood2x', label: 'x2 Wood!', icon: 'log', price: 19, bg: '#a8683a' },
 ]
 
-export const PET_SLOTS = 4 // equipped at once without the +3 Pets! pass
+export const PET_SLOTS = 1 // equipped at start; more come from the Upgrades stall's Equip Pets (and the +3 Pets! pass)
 export const PET_INVENTORY_MAX = 60
 
 // Horizontal distance from an egg's centre: within `open` the E prompt shows;

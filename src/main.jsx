@@ -10,7 +10,10 @@ import { install as installChop } from './systems/chop.js'
 import { install as installSell } from './systems/sell.js'
 import { install as installChoppers } from './systems/choppers.js'
 import { install as installAuras } from './systems/auras.js'
+import { install as installUpgrades } from './systems/upgrades.js'
+import { install as installArtifacts } from './systems/artifacts.js'
 import { install as installLoot } from './systems/loot.js'
+import { install as installForge } from './systems/forge.js'
 import { usePlayerData, resetSave } from './store/usePlayerData.js'
 import { player, resetPlayer } from './systems/playerState.js'
 import { setView, syncYawToPlayer } from './systems/cameraOrbit.js'
@@ -32,6 +35,9 @@ installChop() // click next to a tree for wood
 installAuras() // Auras stall E prompt -> aura window
 installSell() // Sell Treasure stall E prompt -> sell window
 installChoppers() // Choppers stall E prompt -> choppers window
+installUpgrades() // Upgrades stall E prompt -> upgrades window
+installArtifacts() // Craft Artifacts bench E prompt -> artifacts window
+installForge() // Forge lava pool E prompt -> fuse window
 installLoot() // x1 Luck loot trees -> E to collect into the Bag
 startNet() // Colyseus: remote players
 

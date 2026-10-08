@@ -18,7 +18,17 @@ export const useGameStore = create(() => ({
   rebirthMenu: false, // Rebirth window (components/RebirthMenu.jsx)
   aurasMenu: false, // Auras window, opened by hold-E at the stall (systems/auras.js)
   aurasIndex: false, // Auras Index page of the Auras window (the "i" button)
+  aurasOwned: false, // "My Auras" page of the Auras window (equip / unequip)
   autoSpin: false, // Auto Spin toggle in the Auras window
+  autoStop: null, // Auto Spin stops after landing this rarity or better (null = never)
+  auraBurst: null, // { at, color } of the latest spin, drives the stall flash (world/AuraStallFx.jsx)
+  upgradesMenu: false, // Upgrades window, opened by hold-E at the stall (systems/upgrades.js)
+  artifactsMenu: false, // Artifacts window, opened by hold-E at the Craft bench (systems/artifacts.js)
+  artifactCraft: null, // artifact id whose ingredient/craft page is showing inside the Artifacts window
   choppersMenu: false, // Choppers window, opened by hold-E at the stall (systems/choppers.js)
+  forgeMenu: false, // Forge window, opened by hold-E at the lava pool (systems/forge.js)
+  forgeSlots: [], // pet ids placed in the Forge's fuse slots
+  forgeResult: null, // { success, text, color } of the last fuse, shown in the window
+  forgeBurst: null, // { at, success } of the last fuse, drives the lava flare (world/Forge.jsx)
   sellMenu: false, // Sell Treasure window, opened by hold-E at the stall (systems/sell.js)
 }))

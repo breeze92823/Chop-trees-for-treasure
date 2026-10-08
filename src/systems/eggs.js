@@ -13,7 +13,7 @@ const eggs = EGGS.list.filter((e) => EGG_SHOP[e.kind])
 let promptKey = null
 
 export function openEggMenu(kind) {
-  useGameStore.setState({ eggMenu: kind, petsMenu: false })
+  useGameStore.setState({ eggMenu: kind, petsMenu: false, forgeMenu: false })
 }
 
 export function closeEggMenu() {

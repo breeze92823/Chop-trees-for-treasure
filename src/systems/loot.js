@@ -6,7 +6,8 @@
 // world/Loot.jsx); stand next to it and press E (instant, no hold) to put it in
 // the Bag (usePlayerData bag, capacity BAG_MAX). The loot trees re-arm when the
 // forest regrows (treeHealth onTreesReset), dropping anything left lying.
-import { BAG_MAX, ITEM_INFO, LOOT_PICKUP_RANGE, LUCK_LOOT, RARITIES, X1_DROPS } from '../data/loot.js'
+import { bagMax } from './upgrades.js'
+import { ITEM_INFO, LOOT_PICKUP_RANGE, LUCK_LOOT, RARITIES, X1_DROPS } from '../data/loot.js'
 import { FOREST_TREES } from '../world/forestTrees.js'
 import { FOREST } from '../world/layout.js'
 import { seededRandom } from '../utils/random.js'
@@ -84,7 +85,7 @@ function spawn(tree) {
 
 function collect(drop) {
   const bag = usePlayerData.getState().bag
-  if (bag.length >= BAG_MAX) {
+  if (bag.length >= bagMax()) {
     const now = performance.now()
     if (now - lastFull > 700) showActionResult('Bag full!', false) // E held repeats every frame
     lastFull = now
