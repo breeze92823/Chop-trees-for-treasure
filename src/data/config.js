@@ -3,6 +3,8 @@
 // feel) is a constant here; systems/ and components/ read it and hold no
 // theme values of their own. Bloxity SDK constants live in data/bloxity.js.
 
+import { FOREST_END_Z } from '../world/layout.js'
+
 // --- Identity -------------------------------------------------------------
 export const GAME_SLUG = 'chop-trees-for-treasure' // slug registered on bloxity.io
 export const GAME_TITLE = 'Chop Trees for Treasure'
@@ -12,7 +14,7 @@ export const GROUND_Y = 0
 export const GROUT = 0.05 // tile material grout width (materials/tile.js)
 // Walkable rectangle; playerMovement clamps to it (the "invisible wall").
 // The hub basin (see world/layout.js); the terraced cliffs sit just outside it.
-export const WORLD_BOUNDS = { minX: -34.5, maxX: 54, minZ: -114, maxZ: 28 }
+export const WORLD_BOUNDS = { minX: -34.5, maxX: 54, minZ: FOREST_END_Z, maxZ: 28 }
 export const SPAWN = { x: 0, y: 0.3, z: 6 }
 export const SPAWN_FACING = Math.PI // yaw the character faces on spawn (PI = toward -Z)
 
@@ -40,7 +42,7 @@ export const COLORS = {
   train2: '#eb9a2c',
   board: '#7d45e6', // Leaderboards purple
   board2: '#6c37d4',
-  horizon: '#cdeef6', // fog + clear colour; matches the bottom of the sky dome
+  horizon: '#f7d6a8', // fog + clear colour; matches the bottom of the sky dome (5 PM)
 }
 
 // Default (signed-out / fallback) character look.
@@ -48,12 +50,14 @@ export const CHARACTER_COLORS = { skin: '#f2c79a', suit: '#2f9e8f', hair: '#5a3a
 
 // --- Lighting (components/Lighting.jsx) ----------------------------------------
 export const LIGHT = {
-  sun: { color: '#fff1d6', intensity: 2.3, offset: [-55, 75, 30] }, // offset from the world centre
-  hemisphere: { sky: '#e6f7ff', ground: '#6f7f4a', intensity: 1.1 },
-  ambient: 0.35,
+  sun: { color: '#ffc27a', intensity: 2.5, offset: [-65, 42, 30] }, // golden late-afternoon sun
+  hemisphere: { sky: '#cfe3ff', ground: '#8a7048', intensity: 1.0 },
+  ambient: 0.3,
   shadowMapSize: 4096,
 }
-export const FOG = { near: 170, far: 380 }
+export const FOG = { near: 120, far: 340 }
+// Street lamps (world/Lamps.jsx): only the `pool` nearest to the player cast real light.
+export const LAMP = { color: '#ffc46b', intensity: 12, distance: 20, pool: 8, height: 4.2 }
 
 // --- Camera (systems/cameraOrbit.js) ---------------------------------------------
 export const CAMERA = {

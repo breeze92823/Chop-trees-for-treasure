@@ -3,6 +3,9 @@ import Cliffs from '../world/Cliffs.jsx'
 import Stall from '../world/Stall.jsx'
 import TrainingArea from '../world/TrainingArea.jsx'
 import Forest from '../world/Forest.jsx'
+import Lamps from '../world/Lamps.jsx'
+import Loot from '../world/Loot.jsx'
+import AuraStallFx from '../world/AuraStallFx.jsx'
 import Leaderboards from '../world/Leaderboards.jsx'
 import SouthArea, { SwordDisplay } from '../world/SouthArea.jsx'
 import { Portal, Scatter } from '../world/Landmarks.jsx'
@@ -17,6 +20,9 @@ export default function World() {
       <Ground />
       <Cliffs />
       <Forest />
+      <Loot />
+      <Lamps />
+      <AuraStallFx />
       <TrainingArea />
       <Leaderboards />
       <SouthArea />

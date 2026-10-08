@@ -21,8 +21,10 @@ import {
 } from 'three'
 import { MATERIAL_PBR } from '../data/materials.js'
 import { PROPORTIONS, RIG, RIG_HEIGHT, clamp } from '../data/bloxity.js'
-import { AVATAR_SLOTS, isEquipped, itemUrls, partUrl, skinUrl } from '../data/avatarCdn.js'
+import { AVATAR_SLOTS, assetUrl, describeItem, isEquipped, itemUrls, partUrl, skinUrl } from '../data/avatarCdn.js'
 import { player } from './playerState.js'
+
+const HAT_LIFT = 0.8
 
 const gltfLoader = new GLTFLoader()
 const objLoader = new OBJLoader()
@@ -77,11 +79,18 @@ function configureItemTexture(texture) {
   return texture
 }
 
+// With no skin equipped the portal still dresses the body in its default skin
+// (skins/0.png), so do the same rather than keeping the rig's embedded map.
 async function applySkin(root, id) {
-  if (!isEquipped(id)) return
+  const wanted = isEquipped(id)
+  let url = skinUrl(wanted ? id : 0)
+  if (wanted) {
+    const item = await describeItem(id)
+    url = assetUrl(item?.assetPaths?.texture) || url
+  }
   let texture
   try {
-    texture = configureSkinTexture(await textureLoader.loadAsync(skinUrl(id)))
+    texture = configureSkinTexture(await textureLoader.loadAsync(url))
   } catch {
     return // keep the rig's embedded texture
   }
@@ -100,9 +109,12 @@ async function applySkin(root, id) {
 // The part's skinIndex values are remapped bone-name-by-bone-name into the
 // base skeleton's order first, since its own export order usually differs.
 async function applyPart(root, slot, id) {
+  const item = await describeItem(id)
+  const pathKey = slot.side ? `mesh${slot.side}` : 'mesh'
+  const url = assetUrl(item?.assetPaths?.[pathKey]) || partUrl(slot, id)
   let gltf
   try {
-    gltf = await gltfLoader.loadAsync(partUrl(slot, id))
+    gltf = await gltfLoader.loadAsync(url)
   } catch {
     return // slot unavailable: the default_* mesh stays visible
   }
@@ -147,7 +159,12 @@ async function applyPart(root, slot, id) {
 async function applyItem(root, slot, id) {
   const anchor = root.nodes[slot.attach]
   if (!anchor) return
-  const urls = itemUrls(slot, id)
+  const item = await describeItem(id)
+  const fallback = itemUrls(slot, id)
+  const urls = {
+    mesh: assetUrl(item?.assetPaths?.mesh) || fallback.mesh,
+    texture: assetUrl(item?.assetPaths?.texture) || fallback.texture,
+  }
   let object
   try {
     object = await objLoader.loadAsync(urls.mesh)
@@ -168,7 +185,22 @@ async function applyItem(root, slot, id) {
       texture ? { map: texture, ...MATERIAL_PBR.PLAYER } : { color: '#cccccc', ...MATERIAL_PBR.PLAYER },
     )
   })
+  // Hats are authored for the portal rig, whose renderer parents them to the
+  // head bone lifted 0.8 up; at the bone origin they sink into the head.
+  if (slot.key === 'hatId') object.position.set(0, HAT_LIFT, 0)
   anchor.add(object)
+}
+
+// A hat can insist on a head ('-1' = the stock one) because it is modelled
+// around it; a custom head would poke through. The portal applies this when
+// the hat is equipped, but looks reaching us another way (e.g. a remote
+// player's saved JSON) may predate it, so enforce it here too.
+async function withForcedHead(equipped) {
+  if (!isEquipped(equipped.hatId)) return equipped
+  const hat = await describeItem(equipped.hatId)
+  const forced = hat?.forceHeadId
+  if (forced === undefined || forced === null) return equipped
+  return { ...equipped, headId: forced }
 }
 
 // `equipped` is the shape SDK.avatar.getEquipped() returns. `root` is a
@@ -178,6 +210,8 @@ export async function attachEquippedAccessories(root, equipped, { signal } = {})
   if (!root || !equipped) return
   try {
     ownMaterials(root)
+    equipped = await withForcedHead(equipped)
+    if (signal?.aborted) return
     await applySkin(root, equipped.skinId)
     if (signal?.aborted) return
     // Slots load in parallel; each one swallows its own failure.

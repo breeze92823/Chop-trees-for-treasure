@@ -19,6 +19,13 @@ export function canvasTexture(key, w, h, draw, { repeat = false } = {}) {
   return texture
 }
 
+// Frees a texture made by canvasTexture() whose data changed (its key carries the data), so
+// stale ones do not pile up in the cache.
+export function releaseTexture(texture) {
+  for (const [key, t] of cache) if (t === texture) cache.delete(key)
+  texture.dispose()
+}
+
 // Cartoon sky dome (4096x2048 equirect): cyan gradient on top, six rows of
 // puffy cloud banks around the horizon, flat pale blue underneath.
 export function skyTexture() {
@@ -29,20 +36,20 @@ export function skyTexture() {
     const H = h / 2
     const horizon = H / 2
     const g = ctx.createLinearGradient(0, 0, 0, horizon)
-    g.addColorStop(0, '#06c9ec')
-    g.addColorStop(0.6, '#14d3ef')
-    g.addColorStop(1, '#5fdff0')
+    g.addColorStop(0, '#3f8fd8')
+    g.addColorStop(0.6, '#79b4e6')
+    g.addColorStop(1, '#f7d6a8')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, W, H)
 
     const rand = seededRandom(17)
     const rows = [
-      { y: -70, r: [22, 44], body: '#4fd3ea', lit: '#86e3f1' },
-      { y: -42, r: [20, 40], body: '#79dcec', lit: '#aaebf4' },
-      { y: -14, r: [18, 38], body: '#9ce4ef', lit: '#c9f2f8' },
-      { y: 14, r: [18, 34], body: '#b4e9f1', lit: '#dff7fa' },
-      { y: 42, r: [16, 32], body: '#c2ebf1', lit: '#e8f9fb' },
-      { y: 70, r: [16, 30], body: '#c9ecf1', lit: '#eefafc' },
+      { y: -70, r: [22, 44], body: '#6aa6dc', lit: '#a4cdf0' },
+      { y: -42, r: [20, 40], body: '#9cc0e4', lit: '#d0e0f0' },
+      { y: -14, r: [18, 38], body: '#d8cdd0', lit: '#fbe6cf' },
+      { y: 14, r: [18, 34], body: '#f6d3b0', lit: '#ffe9c4' },
+      { y: 42, r: [16, 32], body: '#f9d5a2', lit: '#ffecc0' },
+      { y: 70, r: [16, 30], body: '#fbd9a6', lit: '#fff0c8' },
     ]
     const puff = (x, y, r, row) => {
       for (const dx of [-W, 0, W]) {
@@ -70,8 +77,8 @@ export function skyTexture() {
       }
     })
     const low = ctx.createLinearGradient(0, horizon + 110, 0, horizon + 180)
-    low.addColorStop(0, '#c9ecf1')
-    low.addColorStop(1, '#c9e8ec')
+    low.addColorStop(0, '#fbd9a6')
+    low.addColorStop(1, '#f7d6a8')
     ctx.fillStyle = low
     ctx.fillRect(0, horizon + 110, W, H)
   })

@@ -35,6 +35,8 @@ export const MAT = {
   boardStep: surface('#5162dc', { top2: '#4757cf', checker: 2 }),
   forestFloor: surface('#4cc928', { top2: '#43bb22', checker: 4 }),
   leaves: surface('#41b62a', { top2: '#38a623', side: '#3aab25', side2: '#33a020', checker: 1, studAmt: 0.7 }),
+  // Near-white canopy pattern: each zone tints it per instance (world/Forest.jsx) or per material (TreeFx.jsx).
+  leavesTint: surface('#ffffff', { top2: '#ececec', side: '#f2f2f2', side2: '#dedede', checker: 1, studAmt: 0.7 }),
   trunk: surface('#7a3f1f', { side: '#7a3f1f', side2: '#6d371a', checker: 1, studAmt: 0.5 }),
   eggBase: surface('#1f6b2c', { top2: '#1b6127', checker: 1 }),
   wood: plastic('#8a4a22'),

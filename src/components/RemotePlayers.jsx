@@ -9,6 +9,8 @@ import { makeGait, updateGait, disposeGait } from '../systems/avatarAnim.js'
 import { parseAvatar } from '../systems/net.js'
 import { NET } from '../data/config.js'
 import Nameplate from './Nameplate.jsx'
+import PetFollowers from './PetFollowers.jsx'
+import AuraFx from './AuraFx.jsx'
 
 const _up = new Vector3(0, 1, 0)
 const _q = new Quaternion()
@@ -22,6 +24,9 @@ function RemotePlayer({ id }) {
   const gaitRef = useRef(null)
   const [avatar, setAvatar] = useState(() => buildDefaultCharacter())
   const [name, setName] = useState('')
+  const [pets, setPets] = useState('')
+  const [aura, setAura] = useState('')
+  const anchor = useRef({ x: 0, y: 0, z: 0, yaw: 0 })
   const loadedAvatarJson = useRef(null)
   const poll = useRef(0)
   const [rev, setRev] = useState(0)
@@ -69,6 +74,11 @@ function RemotePlayer({ id }) {
 
     const gait = gaitRef.current
     if (gait) updateGait(gait, dt, p.speed01, p.grounded, p.pose || null)
+    const a = anchor.current
+    a.x = g.position.x
+    a.y = g.position.y
+    a.z = g.position.z
+    a.yaw = p.yaw
 
     // Name changes and avatar edits are rare; check twice a second.
     poll.current += dt
@@ -76,6 +86,8 @@ function RemotePlayer({ id }) {
       poll.current = 0
       const n = p.username || 'Player'
       if (n !== name) setName(n)
+      if ((p.pets || '') !== pets) setPets(p.pets || '')
+      if ((p.aura || '') !== aura) setAura(p.aura || '')
       if ((p.avatar || '') !== loadedAvatarJson.current) {
         loadedAvatarJson.current = p.avatar || ''
         setRev((r) => r + 1) // rebuild the character with the new look
@@ -84,10 +96,14 @@ function RemotePlayer({ id }) {
   })
 
   return (
-    <group ref={ref}>
-      <primitive object={avatar} />
-      {name && <Nameplate text={name} />}
-    </group>
+    <>
+      <group ref={ref}>
+        <primitive object={avatar} />
+        <AuraFx id={aura} />
+        {name && <Nameplate text={name} />}
+      </group>
+      <PetFollowers ids={pets ? pets.split(',') : []} anchor={() => (ref.current?.userData.placed ? anchor.current : null)} />
+    </>
   )
 }
 

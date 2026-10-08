@@ -53,9 +53,13 @@ Extra animations: `registerPose('chop', (gait, dt, weight) => { ... })` in [syst
 
 To sync another field (a held item, a team): add it to `PlayerState` in the server's `WorldState.ts`, accept it in `WorldRoom.ts`, send it from `sendPose()` in [net.js](src/systems/net.js), read it in `RemotePlayers.jsx`.
 
+## Progress and leaderboards
+
+For a signed-in Bloxity account, [net.js](src/systems/net.js) loads the saved `usePlayerData` from the server on join (`progress`; a new account answers `noProgress` and its local save is pushed instead), then saves it back debounced (`saveProgress`). Guests and a server without `MONGODB_URI` keep using localStorage only. The server's `leaderboard` message fills [useLeaderboardStore.js](src/store/useLeaderboardStore.js), which the boards in [Leaderboards.jsx](src/world/Leaderboards.jsx) draw. On join the server may also offer offline earnings for time spent away; [OfflineWindow.jsx](src/components/OfflineWindow.jsx) shows them and Claim pays them out. The backend repo (`../Chop-trees-for-treasure-backend`) deploys through its own GitHub workflow.
+
 ## Not included on purpose
 
-HUD windows, economy, loot, tutorial, persistence (the server holds no database) and on-screen touch controls. The input layer already exposes `setTouchMove`, `addTouchLook`, `pressTouchJump` for a touch UI. The Legion deploy workflow was left out; copy it from the reference project once the game has a real slug.
+On-screen touch controls. The input layer already exposes `setTouchMove`, `addTouchLook`, `pressTouchJump` for a touch UI.
 
 ## Dev notes
 

@@ -262,46 +262,226 @@ export function plateTexture(text, bg, fg = '#ffffff') {
 }
 
 // --- Leaderboard panel --------------------------------------------------------
-const NAMES = ['Blox_King', 'TreeSlayer', 'xXAxeLordXx', 'Lumberjack77', 'NoobMaster', 'Timberrr', 'OakSmash', 'PineDream', 'LogCollector', 'ChopChop']
-export function leaderboardTexture(title, icon, color) {
-  return canvasTexture(`board|${title}`, 640, 512, (ctx, w, h) => {
-    ctx.fillStyle = '#3b2312'
-    ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = '#5a3a1f'
-    ctx.fillRect(12, 12, w - 24, h - 24)
-    // header
-    ctx.fillStyle = color
-    ctx.beginPath()
-    ctx.roundRect(22, 20, w - 44, 76, 14)
-    ctx.fill()
-    const titleSize = 44
-    ctx.font = font(titleSize)
-    const tw = ctx.measureText(title).width + 64
-    drawIcon(ctx, icon, (w - tw) / 2 + 26, 58, 50)
-    strokeFillText(ctx, title, (w - tw) / 2 + 64, 59, titleSize, ['#ffffff', '#f4f4f4'], '#2a1608')
-    const rand = seededRandom(title.length * 31)
-    let value = 9e6 + rand() * 9e6
-    for (let i = 0; i < 10; i++) {
-      const y = 106 + i * 36
-      ctx.fillStyle = i % 2 ? '#6d4826' : '#7a5530'
-      ctx.fillRect(26, y, w - 52, 33)
-      const rankColor = ['#ffd23a', '#d7dde6', '#e0915a'][i] ?? '#ffffff'
-      ctx.font = font(22)
+// Roblox-style board: dark header strip with the title flanked by big icons,
+// an orange-brown frame, RANK / PLAYER / value columns, medal ranks, avatar
+// discs, names, a highlighted row for the local player and an "Updates live"
+// footer. Rows come from the server (store/useLeaderboardStore.js).
+const BOARD_STYLE = {
+  cash: { value: '#5cff7a', fmt: (n) => '$' + shortNum(n) },
+  arm: { value: '#ffe9a8', fmt: shortNum },
+  rebirth: { value: '#ff9ad0', fmt: shortNum },
+  trophy: { value: '#9ad7ff', fmt: timePlayed }, // value = seconds
+}
+
+// 90 -> "1m", 5400 -> "1h 30m", 200000 -> "2d 7h".
+function timePlayed(seconds) {
+  const m = Math.floor(seconds / 60)
+  const h = Math.floor(m / 60)
+  const d = Math.floor(h / 24)
+  if (d) return `${d}d ${h % 24}h`
+  if (h) return `${h}h ${m % 60}m`
+  return `${m}m`
+}
+
+// `rows` = the top players { name, value } best first (up to 10); `me` = { rank, value } for the
+// local player's highlighted bottom row (rank null = outside the list). The key carries the data,
+// so each change makes a new texture: release the old one with releaseTexture().
+export function leaderboardTexture(title, icon, color, rows = [], me = null) {
+  const sig = JSON.stringify([rows.map((r) => [r.name, r.value]), me])
+  return canvasTexture(`board2|${title}|${sig}`, 768, 640, (ctx, w, h) => {
+    const style = BOARD_STYLE[icon] ?? BOARD_STYLE.arm
+    const fontI = (size) => `italic 700 ${size}px ${FONT_FAMILY}, system-ui, sans-serif`
+    const outlined = (text, x, y, size, fill, stroke, align = 'left', f = font) => {
+      ctx.font = f(size)
+      ctx.textAlign = align
       ctx.textBaseline = 'middle'
-      ctx.textAlign = 'left'
-      ctx.fillStyle = rankColor
-      ctx.fillText(`#${i + 1}`, 38, y + 17)
-      ctx.fillStyle = '#ffffff'
-      ctx.fillText(NAMES[(i + title.length) % NAMES.length], 92, y + 17)
-      ctx.textAlign = 'right'
-      ctx.fillStyle = '#ffe48a'
-      ctx.fillText(shortNum(value), w - 38, y + 17)
-      value *= 0.55 + rand() * 0.3
+      ctx.lineJoin = 'round'
+      ctx.lineWidth = size * 0.22
+      ctx.strokeStyle = stroke
+      ctx.strokeText(text, x, y)
+      ctx.fillStyle = fill
+      ctx.fillText(text, x, y)
     }
-    ctx.textAlign = 'center'
-    ctx.font = font(22)
-    ctx.fillStyle = '#ffd77a'
-    ctx.fillText('Refreshes in 0:53', w / 2, h - 24)
+    // wooden frame: warm gradient, plank seams, bevel
+    const frame = ctx.createLinearGradient(0, 0, 0, h)
+    frame.addColorStop(0, '#d0701f')
+    frame.addColorStop(0.5, '#a9501a')
+    frame.addColorStop(1, '#7c3410')
+    ctx.fillStyle = frame
+    ctx.beginPath()
+    ctx.roundRect(0, 0, w, h, 26)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(60,20,4,0.35)'
+    ctx.lineWidth = 3
+    for (const gy of [38, 76, h - 56, h - 30]) {
+      ctx.beginPath()
+      ctx.moveTo(8, gy)
+      ctx.lineTo(w - 8, gy)
+      ctx.stroke()
+    }
+    ctx.lineWidth = 6
+    ctx.strokeStyle = '#3a1706'
+    ctx.beginPath()
+    ctx.roundRect(0, 0, w, h, 26)
+    ctx.stroke()
+    ctx.lineWidth = 3
+    ctx.strokeStyle = 'rgba(255,200,120,0.5)'
+    ctx.beginPath()
+    ctx.roundRect(7, 7, w - 14, h - 14, 20)
+    ctx.stroke()
+
+    // title: slanted gold-white text between two big tilted icons
+    const titleSize = 66
+    ctx.font = fontI(titleSize)
+    const tw = ctx.measureText(title).width
+    const iconS = 96
+    const tx = (w - tw) / 2
+    for (const [ix, rot] of [[tx - iconS * 0.7, -0.2], [tx + tw + iconS * 0.7, 0.2]]) {
+      ctx.save()
+      ctx.translate(ix, 62)
+      ctx.rotate(rot)
+      drawIcon(ctx, icon, 0, 0, iconS)
+      ctx.restore()
+    }
+    ctx.font = fontI(titleSize)
+    ctx.lineJoin = 'round'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+    ctx.lineWidth = titleSize * 0.26
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)'
+    ctx.strokeText(title, tx, 68)
+    ctx.strokeStyle = '#3a1604'
+    ctx.strokeText(title, tx, 62)
+    const tg = ctx.createLinearGradient(0, 30, 0, 90)
+    tg.addColorStop(0, '#fffbe6')
+    tg.addColorStop(1, '#ffc24a')
+    ctx.fillStyle = tg
+    ctx.fillText(title, tx, 62)
+
+    // table: dark brown well with a green inner rim
+    ctx.fillStyle = '#2a1308'
+    ctx.beginPath()
+    ctx.roundRect(16, 112, w - 32, h - 160, 18)
+    ctx.fill()
+    ctx.lineWidth = 4
+    ctx.strokeStyle = '#1b0a03'
+    ctx.stroke()
+    ctx.strokeStyle = '#3f8a2a'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.roundRect(22, 118, w - 44, h - 172, 14)
+    ctx.stroke()
+
+    // column headers
+    ctx.fillStyle = '#e8b878'
+    ctx.font = fontI(18)
+    ctx.textBaseline = 'middle'
+    ctx.textAlign = 'left'
+    ctx.fillText('RANK', 40, 138)
+    ctx.fillText('PLAYER', 150, 134)
+    ctx.textAlign = 'right'
+    ctx.fillText(icon === 'cash' ? 'CASH' : icon === 'arm' ? 'STRENGTH' : icon === 'rebirth' ? 'REBIRTHS' : 'TIME', w - 40, 134)
+
+    const rowH = 40
+    const plaque = [['#ffe27a', '#e0a010'], ['#f4f7fb', '#a9b4c4'], ['#f0aa72', '#b8662c']]
+    for (let i = 0; i < 11; i++) {
+      const mine = i === 10
+      const row = mine ? me : rows[i]
+      const y = 152 + i * (rowH + 1.5) + (mine ? 8 : 0)
+      const cy = y + rowH / 2
+      const x0 = 30
+      const rw = w - 60
+      if (mine) {
+        ctx.save()
+        ctx.shadowColor = 'rgba(255,230,90,0.9)'
+        ctx.shadowBlur = 16
+        const g = ctx.createLinearGradient(0, y, 0, y + rowH)
+        g.addColorStop(0, '#fff27a')
+        g.addColorStop(1, '#f0b410')
+        ctx.fillStyle = g
+        ctx.beginPath()
+        ctx.roundRect(x0 - 4, y - 3, rw + 8, rowH + 6, 12)
+        ctx.fill()
+        ctx.restore()
+        ctx.lineWidth = 3
+        ctx.strokeStyle = '#6a3c00'
+        ctx.beginPath()
+        ctx.roundRect(x0 - 4, y - 3, rw + 8, rowH + 6, 12)
+        ctx.stroke()
+      } else {
+        const g = ctx.createLinearGradient(0, y, 0, y + rowH)
+        g.addColorStop(0, i % 2 ? '#8a4a1c' : '#a05a22')
+        g.addColorStop(1, i % 2 ? '#6a3412' : '#7e4218')
+        ctx.fillStyle = g
+        ctx.beginPath()
+        ctx.roundRect(x0, y, rw, rowH, 10)
+        ctx.fill()
+        ctx.lineWidth = 2
+        ctx.strokeStyle = '#2a1004'
+        ctx.stroke()
+        ctx.fillStyle = 'rgba(255,220,160,0.14)'
+        ctx.fillRect(x0 + 8, y + 3, rw - 16, 3)
+      }
+      // rank plaque (podium + you) or plain number
+      if (i < 3 || mine) {
+        const [c1, c2] = mine ? ['#fff6b0', '#f4c020'] : plaque[i]
+        const pw = mine ? 70 : 42
+        const px = mine ? 36 : 40
+        const pg = ctx.createLinearGradient(0, cy - 15, 0, cy + 15)
+        pg.addColorStop(0, c1)
+        pg.addColorStop(1, c2)
+        ctx.fillStyle = pg
+        ctx.beginPath()
+        ctx.roundRect(px, cy - 15, pw, 30, 8)
+        ctx.fill()
+        ctx.lineWidth = 3
+        ctx.strokeStyle = '#4a2a00'
+        ctx.stroke()
+        ctx.fillStyle = '#3a2000'
+        ctx.font = fontI(mine ? 22 : 24)
+        ctx.textAlign = 'center'
+        ctx.fillText(mine ? (me?.rank ? String(me.rank) : '100+') : String(i + 1), px + pw / 2, cy + 1)
+      } else {
+        outlined(String(i + 1), 61, cy + 1, 24, '#ffffff', '#2a1004', 'center', fontI)
+      }
+      if (!row) continue // an empty slot: just the rank
+      const name = mine ? 'You' : row.name
+      // avatar disc: tinted by the name, dark ring, green rim
+      const ax = mine ? 142 : 124
+      let hue = 0
+      for (const c of name) hue = (hue * 31 + c.charCodeAt(0)) % 360
+      ctx.fillStyle = '#17331a'
+      ctx.beginPath()
+      ctx.arc(ax, cy, 19, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = `hsl(${hue} 55% 48%)`
+      ctx.beginPath()
+      ctx.arc(ax, cy, 16, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = 'rgba(255,255,255,0.88)'
+      ctx.beginPath()
+      ctx.arc(ax, cy - 4, 5.5, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(ax, cy + 13, 9, Math.PI, Math.PI * 2)
+      ctx.fill()
+      ctx.lineWidth = 2
+      ctx.strokeStyle = '#3fb34a'
+      ctx.beginPath()
+      ctx.arc(ax, cy, 18, 0, Math.PI * 2)
+      ctx.stroke()
+      // name + @handle
+      const shown = name.length > 14 ? name.slice(0, 13) + '…' : name
+      const nx = ax + 28
+      outlined(shown, nx, cy - 6, 21, '#ffffff', mine ? '#4a2a00' : '#2a1004', 'left', fontI)
+      ctx.font = font(12)
+      ctx.textAlign = 'left'
+      ctx.fillStyle = mine ? '#6a3c00' : '#e0b07a'
+      ctx.fillText('@' + name.toLowerCase(), nx, cy + 12)
+      // value
+      outlined(style.fmt(row.value), w - 44, cy + 1, 25, mine ? '#41e86a' : style.value, mine ? '#0f4a1c' : '#103a14', 'right', fontI)
+    }
+    outlined('Updates live', w / 2, h - 24, 30, '#ffd24a', '#4a2200', 'center', fontI)
   })
 }
 

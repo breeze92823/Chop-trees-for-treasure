@@ -144,13 +144,33 @@ export function getDisplayName() {
   return typeof name === 'string' && name.trim() ? name.trim().slice(0, 64) : 'Guest'
 }
 
+// The SDK fires onUserChanged immediately with an empty (null) state, then
+// again once the portal handshake answers. Treating that first null as final
+// made signed-in players join as guests, so a null user only settles auth
+// after a grace period; a real user settles it at once.
+const GUEST_SETTLE_MS = 2500
+let settleTimer = null
+
+function settleAuth() {
+  settleTimer = null
+  if (authState.ready) return
+  authState.ready = true
+  emitAuth()
+}
+
 function onUser() {
   const SDK = sdk()
   const user = SDK ? SDK.auth.getUser() : null
   const generation = ++userGeneration
   latestEquipped = null // a different account's equip event must not linger
 
-  authState.ready = true
+  if (user || authState.ready) {
+    if (settleTimer) clearTimeout(settleTimer)
+    settleTimer = null
+    authState.ready = true
+  } else if (!settleTimer) {
+    settleTimer = setTimeout(settleAuth, GUEST_SETTLE_MS)
+  }
   authState.user = user
   authState.guest = user ? null : readGuest()
   authState.friends = []
