@@ -151,11 +151,17 @@ function step() {
 
 // Only presses on the 3D view chop; HUD buttons stop propagation before
 // the event reaches window, and anything else (menus, text) isn't a canvas.
+// Touch has a dedicated on-screen Chop button (components/TouchControls.jsx);
+// dragging the 3D view with a finger orbits the camera instead.
+export function setChopHeld(value) {
+  held = value
+}
 function onPointerDown(e) {
-  if (e.button !== 0 || e.target?.tagName !== 'CANVAS') return
+  if (e.pointerType === 'touch' || e.button !== 0 || e.target?.tagName !== 'CANVAS') return
   held = true
 }
-function onPointerUp() {
+function onPointerUp(e) {
+  if (e?.pointerType === 'touch') return // the Chop button owns touch
   held = false
 }
 
