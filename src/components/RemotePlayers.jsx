@@ -11,6 +11,7 @@ import { NET } from '../data/config.js'
 import Nameplate from './Nameplate.jsx'
 import PetFollowers from './PetFollowers.jsx'
 import AuraFx from './AuraFx.jsx'
+import { useBackItem } from './useBackItem.js'
 
 const _up = new Vector3(0, 1, 0)
 const _q = new Quaternion()
@@ -26,10 +27,12 @@ function RemotePlayer({ id }) {
   const [name, setName] = useState('')
   const [pets, setPets] = useState('')
   const [aura, setAura] = useState('')
+  const [artifact, setArtifact] = useState('')
   const anchor = useRef({ x: 0, y: 0, z: 0, yaw: 0 })
   const loadedAvatarJson = useRef(null)
   const poll = useRef(0)
   const [rev, setRev] = useState(0)
+  useBackItem(avatar, artifact)
 
   useEffect(() => {
     let cancelled = false
@@ -88,6 +91,7 @@ function RemotePlayer({ id }) {
       if (n !== name) setName(n)
       if ((p.pets || '') !== pets) setPets(p.pets || '')
       if ((p.aura || '') !== aura) setAura(p.aura || '')
+      if ((p.artifact || '') !== artifact) setArtifact(p.artifact || '')
       if ((p.avatar || '') !== loadedAvatarJson.current) {
         loadedAvatarJson.current = p.avatar || ''
         setRev((r) => r + 1) // rebuild the character with the new look
