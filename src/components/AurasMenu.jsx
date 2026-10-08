@@ -8,7 +8,7 @@ import { AUTO_STOP_STEPS, auraInfo, buyLuckyRoll, closeAurasMenu, equipAura, spi
 import { friendInServer } from '../systems/net.js'
 import { playButtonClick } from '../systems/sfx.js'
 import { formatNumber } from '../utils/format.js'
-import { RAINBOW, grad, T, Icon, stop, Btn, Emoji } from './hudParts.jsx'
+import { RAINBOW, grad, T, stop, Btn, Emoji } from './hudParts.jsx'
 import { CashIcon } from './hudIcons.jsx'
 
 // Auras window, opened by hold-E at the Auras stall (systems/auras.js): the
@@ -143,9 +143,9 @@ export default function AurasMenu() {
         <T size={38} w={4}>{formatNumber(AURA.spinCost)}</T>
       </span>
       <span className="auras-l auras-l-have">
-        <button type="button" className="auras-buy" aria-label={`Buy a Lucky Roll for ${AURA.luckyRollRobux} Robux`} title={`+1 Lucky Roll: ${AURA.luckyRollRobux} Robux`} onPointerDown={stop} onClick={click(buyLuckyRoll)}>
-          <Icon name="robux" size={26} />
-          <T size={22} w={4}>{`+${AURA.luckyRollRobux}`}</T>
+        <button type="button" className="auras-buy" aria-label={`Buy a Lucky Roll for ${formatNumber(AURA.luckyRollCash)} cash`} title={`+1 Lucky Roll: $${formatNumber(AURA.luckyRollCash)}`} onPointerDown={stop} onClick={click(buyLuckyRoll)}>
+          <CashIcon size={26} />
+          <T size={22} w={4}>{`+${formatNumber(AURA.luckyRollCash)}`}</T>
         </button>
         <T size={38} w={4} fill={grad('#c6ff9a', '#3fcf3a')}>{`YOU HAVE ${lucky}`}</T>
       </span>

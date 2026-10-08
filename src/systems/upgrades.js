@@ -35,7 +35,7 @@ export const petSlotBonus = (state = usePlayerData.getState()) => bonus('petslot
 export const bagMax = (state = usePlayerData.getState()) => BAG_MAX + bonus('backpack', state) + artifactBonus('backpack', state)
 
 export function openUpgradesMenu() {
-  useGameStore.setState({ upgradesMenu: true, artifactsMenu: false, choppersMenu: false, sellMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
+  useGameStore.setState({ upgradesMenu: true, artifactsMenu: false, choppersMenu: false, sellMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, questsMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
 }
 
 export function closeUpgradesMenu() {

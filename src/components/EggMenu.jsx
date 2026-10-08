@@ -32,7 +32,7 @@ function Boost({ id, label, icon, emoji, price, bg, owned, timeLeft }) {
       <span className="egg-boost-price">
         {owned
           ? <T size={26} w={3} fill={grad('#c6ff9a', '#3fcf3a')}>OWNED</T>
-          : <><Icon name="robux" size={26} /><T size={26} w={3}>{price}</T></>}
+          : <><Icon name="cash" size={26} /><T size={price >= 1e6 ? 22 : 26} w={3}>{formatNumber(price)}</T></>}
       </span>
       {icon ? <Icon name={icon} size={60} /> : <Emoji size={52}>{emoji}</Emoji>}
       <T size={label.length > 6 ? 30 : 34} w={4}>{timeLeft ? clock(timeLeft) : label}</T>

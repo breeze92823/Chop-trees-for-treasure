@@ -45,22 +45,22 @@ export const INDEX = { perItem: 0.025 }
 // `open` metres of it (world/layout.js STALLS 'sell'); walking past `close`
 // shuts the window.
 export const SELL = {
-  open: 3.5,
-  close: 7,
+  open: 4.5,
+  close: 8,
 }
 
 // Choppers stall (systems/choppers.js, components/ChoppersMenu.jsx): hold E within
 // `open` metres of it (world/layout.js STALLS 'choppers'); past `close` the window shuts.
 export const CHOPPER = {
-  open: 3.5,
-  close: 7,
+  open: 4.5,
+  close: 8,
 }
 
 // Upgrades stall (systems/upgrades.js, components/UpgradesMenu.jsx): hold E within
 // `open` metres of it (world/layout.js STALLS 'upgrades'); past `close` the window shuts.
 export const UPGRADE = {
-  open: 3.5,
-  close: 7,
+  open: 4.5,
+  close: 8,
 }
 
 // Craft Artifacts bench (systems/artifacts.js, components/ArtifactsMenu.jsx): hold E within
@@ -73,11 +73,11 @@ export const ARTIFACT = {
 // Auras stall (systems/auras.js, components/AurasMenu.jsx): hold E within `open`
 // metres of it (world/layout.js STALLS 'auras'); past `close` the window shuts.
 export const AURA = {
-  open: 3.5,
-  close: 7,
+  open: 4.5,
+  close: 8,
   spinCost: 100000, // cash per spin
   autoMs: 1200, // Auto Spin pace
-  luckyRollRobux: 25, // Robux per Lucky Roll bought in the window
+  luckyRollCash: 150000, // cash per Lucky Roll bought in the window (a roll never lands Ash, 35% of spins: 100k / 0.65 ≈ 154k)
   levelsPerRoll: 5, // a free Lucky Roll every this many levels gained (systems/strengthGain.js)
   friendLuck: 1.5, // odds multiplier on Rare+ auras while a Bloxity friend is in the server
   burstMs: 1400, // how long the stall flashes after a spin (world/AuraStallFx.jsx)

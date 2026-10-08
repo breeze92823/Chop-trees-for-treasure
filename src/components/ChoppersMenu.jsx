@@ -13,6 +13,9 @@ import { showActionResult } from '../systems/actionResult.js'
 // Equip / Equipped for owned ones, otherwise a cash price (green when affordable,
 // grey when not) and/or a Robux gem price. Layout in reference pixels (gameHud.css).
 
+// Robux buy buttons only show when .env sets VITE_ROBLUXCASH=true.
+const ROBLUX_CASH = import.meta.env.VITE_ROBLUXCASH === 'true'
+
 const click = (fn) => () => {
   playButtonClick()
   fn()
@@ -60,11 +63,11 @@ function Buttons({ c, owned, equipped, cash }) {
   return (
     <>
       {c.cost != null && (
-        <Btn className={`chopper-btn${c.gems == null ? ' big' : ''}`} style={{ '--bg': cash >= c.cost ? '#2fa83a' : '#7a8094' }} onClick={click(() => buyChopper(c.id, 'cash'))}>
+        <Btn className={`chopper-btn${!ROBLUX_CASH || c.gems == null ? ' big' : ''}`} style={{ '--bg': cash >= c.cost ? '#2fa83a' : '#7a8094' }} onClick={click(() => buyChopper(c.id, 'cash'))}>
           <T size={34} w={4}>{`$${formatNumber(c.cost)}`}</T>
         </Btn>
       )}
-      {c.gems != null && (
+      {ROBLUX_CASH && c.gems != null && (
         <Btn className={`chopper-btn${c.cost == null ? ' big' : ''}`} style={{ '--bg': '#ffb21f' }} onClick={click(() => buyChopper(c.id, 'gems'))}>
           <span className="chopper-gem">
             <Icon name="robux" size={c.cost == null ? 64 : 34} />

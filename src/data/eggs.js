@@ -4,6 +4,8 @@
 //   pets[].power  — added to the wood multiplier while equipped
 //                   (systems/pets.js: 1 + the sum over equipped pets)
 //   pets[].id     — stable slug sent over the network (followers, announcements)
+export const PHOENIX_PRICE = 1_000_000_000_000 // 1 Trillion cash
+
 export const EGG_SHOP = {
   spotted: {
     name: 'Safari Egg',
@@ -20,13 +22,45 @@ export const EGG_SHOP = {
   },
   void: {
     name: 'Ultimate Egg',
-    cost: 11,
-    currency: 'robux',
+    cost: 250000,
+    currency: 'wood',
     colors: ['#b6ff8a', '#2fcf3a'],
     pets: [
       { id: 'snow_cat', name: 'Snow Cat', emoji: '🐱', chance: 50, rarity: 'rare', power: 1.5 },
       { id: 'imp', name: 'Imp', emoji: '😈', chance: 30, rarity: 'epic', power: 2.5 },
       { id: 'frost_dragon', name: 'Frost Dragon', emoji: '🐉', chance: 20, rarity: 'legendary', power: 5, tag: '25% Stronger!' },
+    ],
+  },
+  // Not an egg on the platform: the featured Blazing Phoenix pad on the south lawn
+  // (world/SouthArea.jsx, systems/phoenix.js) sells this one pet outright for cash.
+  // `power` 17.5 = 250% stronger than the best egg pet (Frost Dragon, 5).
+  phoenix: {
+    name: 'Blazing Phoenix',
+    cost: PHOENIX_PRICE,
+    currency: 'cash',
+    colors: ['#ffe08a', '#ff7a1a'],
+    pets: [
+      { id: 'blazing_phoenix', name: 'Blazing Phoenix', emoji: '🔥', chance: 100, rarity: 'legendary', power: 17.5, tag: '250% Stronger!' },
+    ],
+  },
+  // Quest Gold rewards (data/rewards.js, systems/rewards.js): one pet each, bought outright.
+  // `power` 7.5 = 50% stronger than Frost Dragon (5); the unicorn is x140 as advertised.
+  galaxy_dragon: {
+    name: 'Galaxy Dragon',
+    cost: 2500,
+    currency: 'questGold',
+    colors: ['#e86aff', '#6a2fc0'],
+    pets: [
+      { id: 'galaxy_dragon', name: 'Galaxy Dragon', emoji: '🐲', chance: 100, rarity: 'legendary', power: 7.5, tag: '50% Stronger!' },
+    ],
+  },
+  void_unicorn: {
+    name: 'Void Robot Unicorn',
+    cost: 1000,
+    currency: 'questGold',
+    colors: ['#d8b0ff', '#6a2fc0'],
+    pets: [
+      { id: 'void_unicorn', name: 'Void Robot Unicorn', emoji: '🦄', chance: 100, rarity: 'legendary', power: 140, tag: 'x140 Strength!' },
     ],
   },
 }
@@ -42,7 +76,7 @@ export const PETS_BY_ID = Object.fromEntries(
 // Ultimate Egg and the boosts; wood comes from chopping.
 export const STARTING_BALANCE = { wood: 0, robux: 200, strength: 10 }
 
-export const CURRENCY_ICON = { wood: 'log', robux: 'robux' }
+export const CURRENCY_ICON = { wood: 'log', robux: 'robux', cash: 'cash' }
 
 export const RARITY_BG = {
   common: '#c9c9cf',
@@ -68,12 +102,14 @@ export const LUCK = { factor: 2, minutes: 15, rarities: ['rare', 'epic', 'legend
 // Hatches of these rarities are announced to everyone in the server.
 export const ANNOUNCE_RARITIES = ['epic', 'legendary']
 
-// Robux boosts down the window's left side (systems/hatch.js buyBoost):
+// Cash boosts down the window's left side (systems/hatch.js buyBoost):
 // luck is timed, the others are permanent passes in usePlayerData `passes`.
+// Cash prices sit where the Choppers shop puts the same gem counts
+// (19 gems ~ 10K, 45 ~ 500K, 115 ~ 50M).
 export const EGG_BOOSTS = [
-  { id: 'luck', label: 'Luck!', icon: 'clover', price: 45, bg: '#46cf3a' },
-  { id: 'slots', label: '+3 Pets!', emoji: '🐾', price: 115, bg: '#c04fe0' },
-  { id: 'wood2x', label: 'x2 Wood!', icon: 'log', price: 19, bg: '#a8683a' },
+  { id: 'luck', label: 'Luck!', icon: 'clover', price: 500_000, bg: '#46cf3a' },
+  { id: 'slots', label: '+3 Pets!', emoji: '🐾', price: 50_000_000, bg: '#c04fe0' },
+  { id: 'wood2x', label: 'x2 Wood!', icon: 'log', price: 10_000, bg: '#a8683a' },
 ]
 
 export const PET_SLOTS = 1 // equipped at start; more come from the Upgrades stall's Equip Pets (and the +3 Pets! pass)

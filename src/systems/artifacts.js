@@ -5,6 +5,7 @@
 import { CRAFT } from '../world/layout.js'
 import { ARTIFACT } from '../data/economy.js'
 import { artifactInfo, recipeNeeds } from '../data/artifacts.js'
+import { rewardInfo } from '../data/rewards.js'
 import { useGameStore } from '../store/useGameStore.js'
 import { usePlayerData } from '../store/usePlayerData.js'
 import { player } from './playerState.js'
@@ -15,14 +16,16 @@ import { showActionResult } from './actionResult.js'
 const KEY = 'artifacts:bench'
 
 // Equipped artifact's bonus for a stat kind: percent kinds as a fraction (0.15), backpack as slots.
+// Also adds the Pathfinder Wings (Quests window Rewards, data/rewards.js) once owned.
 export function artifactBonus(kind, state = usePlayerData.getState()) {
-  const stat = artifactInfo(state.artifact)?.stats.find(([k]) => k === kind)
-  if (!stat) return 0
-  return kind === 'backpack' ? stat[1] : stat[1] / 100
+  const unit = (stat) => (stat ? (kind === 'backpack' ? stat[1] : stat[1] / 100) : 0)
+  const own = unit(artifactInfo(state.artifact)?.stats.find(([k]) => k === kind))
+  const wings = state.rewards?.includes('wings') ? unit(rewardInfo('wings').stats.find(([k]) => k === kind)) : 0
+  return own + wings
 }
 
 export function openArtifactsMenu() {
-  useGameStore.setState({ artifactsMenu: true, artifactCraft: null, upgradesMenu: false, choppersMenu: false, sellMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
+  useGameStore.setState({ artifactsMenu: true, artifactCraft: null, upgradesMenu: false, choppersMenu: false, sellMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, questsMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
 }
 
 export function closeArtifactsMenu() {

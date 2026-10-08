@@ -11,6 +11,9 @@ import { T, Icon, stop, Btn, Emoji } from './hudParts.jsx'
 // with a cash price (green when affordable, grey when not) and a Robux price.
 // Reuses the Sell window frame; layout in reference pixels (gameHud.css).
 
+// Robux buy buttons only show when .env sets VITE_ROBLUXCASH=true.
+const ROBLUX_CASH = import.meta.env.VITE_ROBLUXCASH === 'true'
+
 const click = (fn) => () => {
   playButtonClick()
   fn()
@@ -36,12 +39,14 @@ function Row({ u, level, cash, robux }) {
             <Btn className="upgrade-btn" style={{ '--bg': cash >= cashPrice ? '#2fa83a' : '#7a8094' }} onClick={click(() => buyUpgrade(u.id, 'cash'))}>
               <T size={34} w={4}>{`$${formatNumber(cashPrice)}`}</T>
             </Btn>
-            <Btn className="upgrade-btn" style={{ '--bg': robux >= gemPrice ? '#ffb21f' : '#a08a5a' }} onClick={click(() => buyUpgrade(u.id, 'gems'))}>
-              <span className="upgrade-gem">
-                <Icon name="robux" size={34} />
-                <T size={34} w={4}>{gemPrice}</T>
-              </span>
-            </Btn>
+            {ROBLUX_CASH && (
+              <Btn className="upgrade-btn" style={{ '--bg': robux >= gemPrice ? '#ffb21f' : '#a08a5a' }} onClick={click(() => buyUpgrade(u.id, 'gems'))}>
+                <span className="upgrade-gem">
+                  <Icon name="robux" size={34} />
+                  <T size={34} w={4}>{gemPrice}</T>
+                </span>
+              </Btn>
+            )}
           </>
         )}
       </div>

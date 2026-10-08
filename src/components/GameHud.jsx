@@ -9,11 +9,13 @@ import PetsMenu from './PetsMenu.jsx'
 import ForgeMenu from './ForgeMenu.jsx'
 import IndexMenu from './IndexMenu.jsx'
 import RebirthMenu from './RebirthMenu.jsx'
+import QuestsMenu from './QuestsMenu.jsx'
 import SellMenu from './SellMenu.jsx'
 import ChoppersMenu from './ChoppersMenu.jsx'
 import AurasMenu from './AurasMenu.jsx'
 import UpgradesMenu from './UpgradesMenu.jsx'
 import ArtifactsMenu from './ArtifactsMenu.jsx'
+import OfflineWindow from './OfflineWindow.jsx'
 import { BookIcon, CashIcon, RebirthIcon } from './hudIcons.jsx'
 import ChopFx from './ChopFx.jsx'
 import LevelUpPopup from './LevelUpPopup.jsx'
@@ -50,6 +52,8 @@ function useInForest() {
   return inside
 }
 
+const ROBLUX_CASH = import.meta.env.VITE_ROBLUXCASH === 'true'
+
 function goHome() {
   playButtonClick()
   respawn()
@@ -78,11 +82,13 @@ function LevelBar() {
         <T size={44} w={5} className="level-l">{`LEVEL ${level}`}</T>
         <T size={40} w={5} className="level-r">{`${formatNumber(xp)}/${need}`}</T>
       </div>
-      <div className="packs">
-        <Btn className="pack" style={{ '--bg': '#ff8a1f' }}><Icon name="coin" size={26} /><T size={28}>+8.5K</T></Btn>
-        <Btn className="pack" style={{ '--bg': '#9a4ff0' }}><Icon name="coin" size={26} /><T size={28}>+800K</T></Btn>
-        <Btn className="pack" style={{ '--bg': '#e8303a' }}><Icon name="coin" size={26} /><T size={28}>+80M</T></Btn>
-      </div>
+      {ROBLUX_CASH && (
+        <div className="packs">
+          <Btn className="pack" style={{ '--bg': '#ff8a1f' }}><Icon name="coin" size={26} /><T size={28}>+8.5K</T></Btn>
+          <Btn className="pack" style={{ '--bg': '#9a4ff0' }}><Icon name="coin" size={26} /><T size={28}>+800K</T></Btn>
+          <Btn className="pack" style={{ '--bg': '#e8303a' }}><Icon name="coin" size={26} /><T size={28}>+80M</T></Btn>
+        </div>
+      )}
       <div className="strength">
         <Emoji size={50}>💪</Emoji>
         <T size={34} w={4} fill={grad('#fff6dc', '#ffd77a')} stroke="#3a2406">{`${formatNumber(strength)} Strength`}</T>
@@ -95,18 +101,22 @@ function LevelBar() {
 function TopRight() {
   return (
     <>
-      <Btn className="autoclick" style={{ '--bg': '#ffd23a' }}>
-        <T size={28} w={4} fill={RAINBOW}>OP Auto Clicker</T>
-        <span className="autoclick-row">
-          <Emoji size={28}>🖱️</Emoji>
-          <T size={28} w={4} fill={grad('#ff8ad8', '#e8243a')}>OFF</T>
-        </span>
-      </Btn>
-      <Btn className="bare gift">
-        <Emoji size={62}>🎁</Emoji>
-        <T size={20} w={3} fill={grad('#c6ff9a', '#3fcf3a')}>FREE!</T>
-      </Btn>
-      <Btn className="bare gear"><Emoji size={64}>⚙️</Emoji></Btn>
+      {ROBLUX_CASH && (
+        <Btn className="autoclick" style={{ '--bg': '#ffd23a' }}>
+          <T size={28} w={4} fill={RAINBOW}>OP Auto Clicker</T>
+          <span className="autoclick-row">
+            <Emoji size={28}>🖱️</Emoji>
+            <T size={28} w={4} fill={grad('#ff8ad8', '#e8243a')}>OFF</T>
+          </span>
+        </Btn>
+      )}
+      {ROBLUX_CASH && (
+        <Btn className="bare gift">
+          <Emoji size={62}>🎁</Emoji>
+          <T size={20} w={3} fill={grad('#c6ff9a', '#3fcf3a')}>FREE!</T>
+        </Btn>
+      )}
+      {ROBLUX_CASH && <Btn className="bare gear"><Emoji size={64}>⚙️</Emoji></Btn>}
     </>
   )
 }
@@ -154,14 +164,14 @@ const MENU = [
   { label: 'Index', icon: BookIcon, bg: '#a066f2', window: 'indexMenu' },
   { label: 'Invite', emoji: '🐥', bg: '#5fd14a' },
   { label: 'Pets', emoji: '🐾', bg: '#3a8ef0', window: 'petsMenu' },
-  { label: 'Quests', emoji: '📜', bg: '#d9b48a' },
+  { label: 'Quests', emoji: '📜', bg: '#d9b48a', window: 'questsMenu' },
 ]
 
 // Pets / Index / Rebirth: one window at a time; the egg window closes under them.
 function toggleWindow(key) {
   playButtonClick()
   const open = !useGameStore.getState()[key]
-  useGameStore.setState({ forgeMenu: false, petsMenu: false, indexMenu: false, rebirthMenu: false, sellMenu: false, choppersMenu: false, upgradesMenu: false, artifactsMenu: false, aurasMenu: false, autoSpin: false, ...(open && { eggMenu: null, autoHatch: false }), [key]: open })
+  useGameStore.setState({ forgeMenu: false, petsMenu: false, indexMenu: false, rebirthMenu: false, questsMenu: false, sellMenu: false, choppersMenu: false, upgradesMenu: false, artifactsMenu: false, aurasMenu: false, autoSpin: false, ...(open && { eggMenu: null, autoHatch: false }), [key]: open })
 }
 
 function toggleAutoChop() {
@@ -179,7 +189,7 @@ function LeftMenu() {
         <T size={32} w={5}>AUTO CHOP</T>
       </Btn>
       <div className="menu">
-        {MENU.map((m) => (
+        {MENU.filter((m) => ROBLUX_CASH || (m.label !== 'Shop' && m.label !== 'Invite')).map((m) => (
           <Btn key={m.label} className="tile" style={{ '--bg': m.bg }} onClick={m.window && (() => toggleWindow(m.window))}>
             {m.icon ? <m.icon size={64} /> : <Emoji size={58}>{m.emoji}</Emoji>}
             <T size={24} w={4} className="tile-label">{m.label}</T>
@@ -213,9 +223,13 @@ export default function GameHud() {
     <div className="game-hud">
       <LevelBar />
       <TopRight />
-      <Offer top={300} price={59} label="x2 CASH" bg="#46cf3a" />
-      <Offer top={431} price={3} label="x2 STRENGTH" bg="#ff9a1f" />
-      <OpPet />
+      {ROBLUX_CASH && (
+        <>
+          <Offer top={300} price={59} label="x2 CASH" bg="#46cf3a" />
+          <Offer top={431} price={3} label="x2 STRENGTH" bg="#ff9a1f" />
+          <OpPet />
+        </>
+      )}
       <LeftMenu />
       <Stats />
       <EggMenu />
@@ -223,6 +237,7 @@ export default function GameHud() {
       <ForgeMenu />
       <IndexMenu />
       <RebirthMenu />
+      <QuestsMenu />
       <SellMenu />
       <ChoppersMenu />
       <AurasMenu />
@@ -232,6 +247,7 @@ export default function GameHud() {
       <LevelUpPopup />
       <Announcements />
       <HatchOverlay />
+      <OfflineWindow />
     </div>
   )
 }

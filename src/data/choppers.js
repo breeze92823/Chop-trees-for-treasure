@@ -6,10 +6,15 @@
 //   bonus    — optional "N% Stronger!" (Secret / Unique / Admin): the per-swing
 //              Strength is strength x (1 + bonus / 100)
 //   cost     — cash price (null = not sold for cash); 0 = owned from the start
+//              (Secret ones are priced ~per gem: 80B / 160B / 250B for 279 / 559 / 839 gems)
 //   gems     — Robux ("gem") price (null = not sold for Robux)
 //   how      — shown instead of a price for choppers that cannot be bought ('Lucky', 'Event')
 //   model    — 3D model spec for systems/axeModels.js
 // Icons are public/ui/choppers/<id>.png, cut from the reference screenshots.
+// Featured chopper (world/SouthArea.jsx SwordDisplay, systems/swordPad.js): the priciest
+// cash chopper by far (Genesis, the top regular axe, is 1B), so it is a long-term goal.
+export const DRAGONS_FANG_PRICE = 25_000_000_000 // 25 Billion cash
+
 export const CHOPPERS = [
   { id: 'pinechip', name: 'Pinechip Hatchet', rarity: 'Common', strength: 1, cost: 0, gems: null, model: { type: 'axe', wood: '#e8742a', grip: '#d6303a', head: '#8a94a6', accent: '#e8742a' } },
   { id: 'camp', name: 'Camp Splitter', rarity: 'Common', strength: 2, cost: 100, gems: 2, model: { type: 'axe', wood: '#c9722e', grip: '#e8d9b0', head: '#2c2c34', accent: '#9aa0b0' } },
@@ -34,9 +39,9 @@ export const CHOPPERS = [
   { id: 'phoenixheart', name: 'Phoenixheart Cleaver', rarity: 'Mythic', strength: 90000, cost: 250000000, gems: 139, model: { type: 'halberd', wood: '#8a2a1a', grip: '#f0a030', head: '#f0a030', accent: '#ffe060', glow: '#ff7a20' } },
   { id: 'voidroot', name: 'Voidroot Devourer', rarity: 'Mythic', strength: 200000, cost: 500000000, gems: 159, model: { type: 'crescent', wood: '#2a1a30', grip: '#c040ff', head: '#6a2aa0', accent: '#c040ff', glow: '#c040ff' } },
   { id: 'genesis', name: 'Genesis Worldcutter', rarity: 'Mythic', strength: 500000, cost: 1000000000, gems: 169, model: { type: 'twin', wood: '#4a3a1a', grip: '#ffe080', head: '#c8a860', accent: '#ffe080', glow: '#ffe080' } },
-  { id: 'solar', name: 'Solar Crown', rarity: 'Secret', strength: 7, bonus: 250, cost: null, gems: 279, model: { type: 'sword', wood: '#e8a050', head: '#ffd8a0', accent: '#e8b050', glow: '#ffb050' } },
-  { id: 'infinity', name: 'Infinity Blade', rarity: 'Secret', strength: 12, bonus: 500, cost: null, gems: 559, model: { type: 'sword', wood: '#3a3a8a', head: '#6a7aff', accent: '#9a8aff', glow: '#9a8aff' } },
-  { id: 'dragonsfang', name: "Dragon's Fang", rarity: 'Secret', strength: 17, bonus: 750, cost: null, gems: 839, model: { type: 'sword', wood: '#3a2a5a', head: '#7a4ad0', accent: '#4ae0e0', glow: '#4ae0e0' } },
+  { id: 'solar', name: 'Solar Crown', rarity: 'Secret', strength: 7, bonus: 250, cost: 80_000_000_000, gems: 279, model: { type: 'sword', wood: '#e8a050', head: '#ffd8a0', accent: '#e8b050', glow: '#ffb050' } },
+  { id: 'infinity', name: 'Infinity Blade', rarity: 'Secret', strength: 12, bonus: 500, cost: 160_000_000_000, gems: 559, model: { type: 'sword', wood: '#3a3a8a', head: '#6a7aff', accent: '#9a8aff', glow: '#9a8aff' } },
+  { id: 'dragonsfang', name: "Dragon's Fang", rarity: 'Secret', strength: 17, bonus: 750, cost: DRAGONS_FANG_PRICE, gems: 839, model: { type: 'sword', wood: '#3a2a5a', head: '#7a4ad0', accent: '#4ae0e0', glow: '#4ae0e0' } },
   { id: 'pathfinder', name: 'Pathfinder Axe', rarity: 'Unique', strength: 12, bonus: 500, cost: null, gems: null, how: 'Lucky', model: { type: 'twin', wood: '#8a6a2a', grip: '#3a8ad0', head: '#d8b860', accent: '#3a8ad0' } },
   { id: 'admin', name: 'Admin Greatsword', rarity: 'Admin', strength: 8, bonus: 300, cost: null, gems: null, how: 'Event', model: { type: 'sword', wood: '#1a2a1a', head: '#1a2a1a', accent: '#30ff50', glow: '#30ff50' } },
 ]

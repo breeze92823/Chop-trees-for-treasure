@@ -24,7 +24,7 @@ export function chopperStrength(state = usePlayerData.getState()) {
 }
 
 export function openChoppersMenu() {
-  useGameStore.setState({ choppersMenu: true, artifactsMenu: false, upgradesMenu: false, sellMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
+  useGameStore.setState({ choppersMenu: true, artifactsMenu: false, upgradesMenu: false, sellMenu: false, aurasMenu: false, autoSpin: false, petsMenu: false, indexMenu: false, rebirthMenu: false, questsMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
 }
 
 export function closeChoppersMenu() {

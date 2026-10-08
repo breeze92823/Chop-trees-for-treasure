@@ -25,7 +25,7 @@ export function openForgeMenu() {
   useGameStore.setState({
     forgeMenu: true, forgeSlots: [], forgeResult: null,
     upgradesMenu: false, choppersMenu: false, sellMenu: false, aurasMenu: false, autoSpin: false, artifactsMenu: false,
-    petsMenu: false, indexMenu: false, rebirthMenu: false, eggMenu: null, autoHatch: false,
+    petsMenu: false, indexMenu: false, rebirthMenu: false, questsMenu: false, eggMenu: null, autoHatch: false,
   })
 }
 

@@ -36,6 +36,7 @@ import { DEV_MODE } from '../data/bloxity.js'
 import { usePlayerData, SAVED_KEYS } from '../store/usePlayerData.js'
 import { equippedPetIds } from './pets.js'
 import { pushAnnouncement } from './announce.js'
+import { playPowerGainPop } from './sfx.js'
 import { GAME_SLUG, NET } from '../data/config.js'
 
 // Two Legion channels (`dev` branch -> dev, `main` -> prod), each with its own
@@ -165,6 +166,13 @@ function onDataChange() {
   saveTimer = setTimeout(saveNow, SAVE_DEBOUNCE_MS)
 }
 
+// Asks the server to pay out the pending offline earnings; the reward is applied on `offlineClaimed`.
+export function claimOffline() {
+  if (!room || useGameStore.getState().offlineClaiming) return
+  useGameStore.setState({ offlineClaiming: true })
+  room.send('claimOffline')
+}
+
 // Seconds the account has played in total: the saved total plus this session.
 export const myPlayTime = () => (room ? playTimeBase + (Date.now() - playTimeAt) / 1000 : 0)
 export const mySessionId = () => room?.sessionId ?? ''
@@ -279,6 +287,13 @@ async function connect() {
       r.leave()
     })
     r.onMessage('leaderboard', (boards) => useLeaderboardStore.setState(boards))
+    // Time spent away since the last visit, offered after `progress`; Claim asks the server to pay it.
+    r.onMessage('offlineEarnings', (offer) => useGameStore.setState({ offlineEarnings: offer, offlineClaiming: false }))
+    r.onMessage('offlineClaimed', ({ cash = 0, strength = 0 }) => {
+      playPowerGainPop()
+      usePlayerData.setState((s) => ({ cash: s.cash + cash, strength: s.strength + strength }))
+      useGameStore.setState({ offlineEarnings: null, offlineClaiming: false })
+    })
     r.onMessage('hatched', (msg) => {
       if (!Array.isArray(msg?.pets)) return
       for (const id of msg.pets) pushAnnouncement(msg.username, id)

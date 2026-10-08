@@ -18,6 +18,7 @@ import { showActionResult } from './actionResult.js'
 import { discoverItem } from './treasureIndex.js'
 import { player } from './playerState.js'
 import { addSystem } from './loop.js'
+import { addQuestProgress } from './quests.js'
 import { clearInteractTarget, setInteractTarget } from './interact.js'
 
 const POOLS = {}
@@ -94,6 +95,7 @@ function collect(drop) {
   usePlayerData.setState({ bag: [...bag, { name: drop.name, rarity: drop.rarity, value: ITEM_INFO[drop.name].value }] })
   useGameStore.setState((s) => ({ worldLoot: s.worldLoot.filter((d) => d.id !== drop.id) }))
   discoverItem(drop.name)
+  if (drop.rarity === 'Mythic') addQuestProgress('mythic', 1)
   showActionResult(`Collected ${drop.name}`, true)
 }
 let lastFull = 0

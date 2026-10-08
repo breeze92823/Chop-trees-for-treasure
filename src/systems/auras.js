@@ -28,7 +28,7 @@ export function auraMultiplier(state = usePlayerData.getState()) {
 }
 
 export function openAurasMenu() {
-  useGameStore.setState({ aurasMenu: true, artifactsMenu: false, upgradesMenu: false, choppersMenu: false, aurasIndex: false, aurasOwned: false, petsMenu: false, indexMenu: false, rebirthMenu: false, sellMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
+  useGameStore.setState({ aurasMenu: true, artifactsMenu: false, upgradesMenu: false, choppersMenu: false, aurasIndex: false, aurasOwned: false, petsMenu: false, indexMenu: false, rebirthMenu: false, questsMenu: false, sellMenu: false, eggMenu: null, autoHatch: false, forgeMenu: false })
 }
 
 export function closeAurasMenu() {
@@ -55,14 +55,14 @@ export function equipAura(id) {
   usePlayerData.setState({ aura: id })
 }
 
-// Buy one Lucky Roll with Robux.
+// Buy one Lucky Roll with cash.
 export function buyLuckyRoll() {
   const s = usePlayerData.getState()
-  if (s.robux < AURA.luckyRollRobux) {
-    showActionResult(`Not enough Robux! Need ${AURA.luckyRollRobux}`, false)
+  if (s.cash < AURA.luckyRollCash) {
+    showActionResult(`Not enough cash! Need $${formatNumber(AURA.luckyRollCash)}`, false)
     return false
   }
-  usePlayerData.setState({ robux: s.robux - AURA.luckyRollRobux, luckyRolls: s.luckyRolls + 1 })
+  usePlayerData.setState({ cash: s.cash - AURA.luckyRollCash, luckyRolls: s.luckyRolls + 1 })
   showActionResult('+1 Lucky Roll', true)
   return true
 }

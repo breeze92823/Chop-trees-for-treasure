@@ -16,6 +16,7 @@ export const useGameStore = create(() => ({
   worldLoot: [], // loot lying where trees fell: { id, name, rarity, x, y, z } (systems/loot.js)
   indexMenu: false, // pet Index window (components/IndexMenu.jsx)
   rebirthMenu: false, // Rebirth window (components/RebirthMenu.jsx)
+  questsMenu: false, // Quests window (components/QuestsMenu.jsx)
   aurasMenu: false, // Auras window, opened by hold-E at the stall (systems/auras.js)
   aurasIndex: false, // Auras Index page of the Auras window (the "i" button)
   aurasOwned: false, // "My Auras" page of the Auras window (equip / unequip)
@@ -30,5 +31,7 @@ export const useGameStore = create(() => ({
   forgeSlots: [], // pet ids placed in the Forge's fuse slots
   forgeResult: null, // { success, text, color } of the last fuse, shown in the window
   forgeBurst: null, // { at, success } of the last fuse, drives the lava flare (world/Forge.jsx)
+  offlineEarnings: null, // { seconds, cash, strength } waiting to be claimed (components/OfflineWindow.jsx; set by systems/net.js)
+  offlineClaiming: false, // Claim sent, waiting for the server's `offlineClaimed`
   sellMenu: false, // Sell Treasure window, opened by hold-E at the stall (systems/sell.js)
 }))

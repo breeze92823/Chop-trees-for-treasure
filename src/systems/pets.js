@@ -6,6 +6,7 @@ import { FORGE_TIERS } from '../data/forge.js'
 import { usePlayerData } from '../store/usePlayerData.js'
 import { petSlotBonus } from './upgrades.js'
 import { showActionResult } from './actionResult.js'
+import { potionMultiplier } from './potions.js'
 
 // Full data for an owned pet ({ id, egg, name }) — emoji, rarity, power...
 export function petInfo(pet) {
@@ -49,7 +50,7 @@ export function petMultiplier(state = usePlayerData.getState()) {
 }
 
 export function woodMultiplier(state = usePlayerData.getState()) {
-  return petMultiplier(state) * (state.passes.wood2x ? 2 : 1)
+  return petMultiplier(state) * (state.passes.wood2x ? 2 : 1) * potionMultiplier('wood', state)
 }
 
 export function toggleEquip(id) {

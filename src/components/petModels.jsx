@@ -4,6 +4,7 @@
 // Shared chibi layout: big cube head, small body, four dark feet.
 import { useMemo } from 'react'
 import * as THREE from 'three'
+import PhoenixModel from './PhoenixModel.jsx'
 
 const mats = new Map()
 function mat(color) {
@@ -178,21 +179,44 @@ function Imp() {
   )
 }
 
-function FrostDragon() {
-  const ice = '#7fd0ff'
+function Dragon({ ice = '#7fd0ff', belly = '#d8f2ff', head = '#8fd8ff', feet = '#4aa3dd', wing = '#a8e0ff', spike = '#f4faff' }) {
   return (
-    <Chibi body={ice} belly="#d8f2ff" head="#8fd8ff" feet="#4aa3dd" scale={1.1} tail tailC={ice}>
-      <Box p={[0, -0.1, HF + 0.08]} s={[0.4, 0.26, 0.18]} c="#d8f2ff" />
+    <Chibi body={ice} belly={belly} head={head} feet={feet} scale={1.1} tail tailC={ice}>
+      <Box p={[0, -0.1, HF + 0.08]} s={[0.4, 0.26, 0.18]} c={belly} />
       <Box p={[0.08, -0.04, HF + 0.18]} s={[0.05, 0.05, 0.02]} c="#1a3a7a" />
       <Box p={[-0.08, -0.04, HF + 0.18]} s={[0.05, 0.05, 0.02]} c="#1a3a7a" />
-      <Box p={[0.2, 0.42, -0.1]} s={[0.1, 0.24, 0.1]} c="#f4faff" r={[-0.4, 0, -0.2]} />
-      <Box p={[-0.2, 0.42, -0.1]} s={[0.1, 0.24, 0.1]} c="#f4faff" r={[-0.4, 0, 0.2]} />
+      <Box p={[0.2, 0.42, -0.1]} s={[0.1, 0.24, 0.1]} c={spike} r={[-0.4, 0, -0.2]} />
+      <Box p={[-0.2, 0.42, -0.1]} s={[0.1, 0.24, 0.1]} c={spike} r={[-0.4, 0, 0.2]} />
       {/* wings + back spikes (head space is offset up/forward) */}
-      <Box p={[0.5, -0.2, -0.45]} s={[0.4, 0.05, 0.4]} c="#a8e0ff" r={[0, 0.3, -0.5]} />
-      <Box p={[-0.5, -0.2, -0.45]} s={[0.4, 0.05, 0.4]} c="#a8e0ff" r={[0, -0.3, 0.5]} />
+      <Box p={[0.5, -0.2, -0.45]} s={[0.4, 0.05, 0.4]} c={wing} r={[0, 0.3, -0.5]} />
+      <Box p={[-0.5, -0.2, -0.45]} s={[0.4, 0.05, 0.4]} c={wing} r={[0, -0.3, 0.5]} />
       {[-0.55, -0.75].map((z, i) => (
-        <Box key={i} p={[0, -0.2 - i * 0.06, z]} s={[0.08, 0.12, 0.1]} c="#f4faff" />
+        <Box key={i} p={[0, -0.2 - i * 0.06, z]} s={[0.08, 0.12, 0.1]} c={spike} />
       ))}
+    </Chibi>
+  )
+}
+
+function FrostDragon() {
+  return <Dragon />
+}
+
+// Quest Gold reward: a purple-and-pink galaxy recolour of the dragon.
+function GalaxyDragon() {
+  return <Dragon ice="#7a3fd8" belly="#ff8ad8" head="#9a55f0" feet="#3a1a8a" wing="#e86aff" spike="#ffd8ff" />
+}
+
+// Quest Gold reward: a white robot unicorn with a glowing horn and a dark void mane.
+function VoidUnicorn() {
+  return (
+    <Chibi body="#f2f2f8" belly="#c8c8d8" head="#ffffff" feet="#4a2a7a" tail tailC="#6a2fc0">
+      <Box p={[0, 0.5, HF - 0.1]} s={[0.1, 0.32, 0.1]} c="#ff9aff" r={[0.3, 0, 0]} />
+      <Box p={[0.26, 0.4, 0]} s={[0.12, 0.2, 0.12]} c="#ffffff" />
+      <Box p={[-0.26, 0.4, 0]} s={[0.12, 0.2, 0.12]} c="#ffffff" />
+      <Box p={[0, 0.34, -0.2]} s={[0.16, 0.2, 0.3]} c="#6a2fc0" />
+      <Box p={[0, -0.12, HF + 0.04]} s={[0.3, 0.2, 0.14]} c="#c8c8d8" />
+      <Box p={[0.15, 0.1, HF + 0.04]} s={[0.1, 0.1, 0.02]} c="#3fe0ff" />
+      <Box p={[-0.15, 0.1, HF + 0.04]} s={[0.1, 0.1, 0.02]} c="#3fe0ff" />
     </Chibi>
   )
 }
@@ -206,6 +230,9 @@ export const PET_MODELS = {
   snow_cat: { Model: SnowCat },
   imp: { Model: Imp, fly: true },
   frost_dragon: { Model: FrostDragon, fly: true },
+  galaxy_dragon: { Model: GalaxyDragon, fly: true },
+  void_unicorn: { Model: VoidUnicorn },
+  blazing_phoenix: { Model: () => <PhoenixModel flap={9} lite />, fly: true },
 }
 
 // Fallback for a pet id with no model: a plain cube.

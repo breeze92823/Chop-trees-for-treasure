@@ -14,6 +14,9 @@ import { RAINBOW, grad, T, Icon, stop, Btn } from './hudParts.jsx'
 // Equipped / Equip for owned ones, otherwise Craft above its Robux price. Same frame as
 // the Choppers / Upgrades windows; layout in reference pixels (gameHud.css).
 
+// Robux buy buttons only show when .env sets VITE_ROBLUXCASH=true.
+const ROBLUX_CASH = import.meta.env.VITE_ROBLUXCASH === 'true'
+
 const click = (fn) => () => {
   playButtonClick()
   fn()
@@ -64,12 +67,14 @@ function Buttons({ a, owned, equipped, robux }) {
       <Btn className="artifact-btn" style={{ '--bg': '#2fa83a' }} onClick={click(() => openCraftPage(a.id))}>
         <T size={36} w={5}>Craft</T>
       </Btn>
-      <Btn className="artifact-btn" style={{ '--bg': robux >= a.gems ? '#ffb21f' : '#a08a5a' }} onClick={click(() => craftArtifact(a.id))}>
-        <span className="artifact-gem">
-          <Icon name="robux" size={34} />
-          <T size={34} w={4}>{a.gems}</T>
-        </span>
-      </Btn>
+      {ROBLUX_CASH && (
+        <Btn className="artifact-btn" style={{ '--bg': robux >= a.gems ? '#ffb21f' : '#a08a5a' }} onClick={click(() => craftArtifact(a.id))}>
+          <span className="artifact-gem">
+            <Icon name="robux" size={34} />
+            <T size={34} w={4}>{a.gems}</T>
+          </span>
+        </Btn>
+      )}
     </>
   )
 }

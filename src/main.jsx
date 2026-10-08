@@ -8,12 +8,15 @@ import { install as installInteract } from './systems/interact.js'
 import { install as installEggs } from './systems/eggs.js'
 import { install as installChop } from './systems/chop.js'
 import { install as installSell } from './systems/sell.js'
+import { install as installQuests } from './systems/quests.js'
 import { install as installChoppers } from './systems/choppers.js'
 import { install as installAuras } from './systems/auras.js'
 import { install as installUpgrades } from './systems/upgrades.js'
 import { install as installArtifacts } from './systems/artifacts.js'
 import { install as installLoot } from './systems/loot.js'
 import { install as installForge } from './systems/forge.js'
+import { install as installPhoenix } from './systems/phoenix.js'
+import { install as installSwordPad } from './systems/swordPad.js'
 import { usePlayerData, resetSave } from './store/usePlayerData.js'
 import { player, resetPlayer } from './systems/playerState.js'
 import { setView, syncYawToPlayer } from './systems/cameraOrbit.js'
@@ -38,6 +41,9 @@ installChoppers() // Choppers stall E prompt -> choppers window
 installUpgrades() // Upgrades stall E prompt -> upgrades window
 installArtifacts() // Craft Artifacts bench E prompt -> artifacts window
 installForge() // Forge lava pool E prompt -> fuse window
+installPhoenix() // Blazing Phoenix pad E prompt -> buy with cash
+installQuests() // quest progress ticks + resets
+installSwordPad() // Dragon's Fang pad E prompt -> buy with cash
 installLoot() // x1 Luck loot trees -> E to collect into the Bag
 startNet() // Colyseus: remote players
 

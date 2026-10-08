@@ -42,10 +42,10 @@ export const LAWNS = [
 
 // Market stalls. `face` is the yaw the counter faces (PI/2 = east).
 export const STALLS = [
-  { id: 'choppers', label: 'Choppers', x: -14.5, z: -9.5, face: Math.PI / 2, base: '#2f8ff0', base2: '#1f6fd0', stripe: '#2f8ff0', labelColors: ['#bfe6ff', '#4aa6ff'], stroke: '#0d2f6e' },
-  { id: 'sell', label: 'Sell Treasure', x: 14.5, z: -9.5, face: -Math.PI / 2, base: '#6a3b1d', base2: '#4f2a12', stripe: '#27b83a', labelColors: ['#b6ff8a', '#2fcf3a'], stroke: '#0c4a14' },
-  { id: 'auras', label: 'Auras', x: -14.5, z: 9.5, face: Math.PI / 2, base: '#5a3018', base2: '#3e200f', stripe: '#6b3a1c', labelColors: ['#ff8c8c', '#e8242c'], stroke: '#5a0a10', glowy: true },
-  { id: 'upgrades', label: 'Upgrades', x: 14.5, z: 9.5, face: -Math.PI / 2, base: '#ff4fc8', base2: '#e534b0', stripe: '#ff5fd0', labelColors: ['#ffc2f5', '#c44ce8'], stroke: '#4a0f5e' },
+  { id: 'choppers', label: 'Choppers', x: -14.5, z: -9.5, face: Math.PI / 2, base: '#1b7f93', base2: '#14606f', stripe: '#2f8ff0', labelColors: ['#bfe6ff', '#4aa6ff'], stroke: '#0d2f6e', keeper: true, lantern: '#5fe6ff' },
+  { id: 'sell', label: 'Sell Treasure', x: 14.5, z: -9.5, face: -Math.PI / 2, base: '#5a2f12', base2: '#3e200c', stripe: '#1fc41f', labelColors: ['#b6ff8a', '#2fcf3a'], stroke: '#0c4a14', keeper: true },
+  { id: 'auras', label: 'Auras', x: -14.5, z: 9.5, face: Math.PI / 2, base: '#3a1d0c', base2: '#2a1408', stripe: '#6b3208', labelColors: ['#ff8c8c', '#e8242c'], stroke: '#5a0a10', glowy: true, keeper: true },
+  { id: 'upgrades', label: 'Upgrades', x: 14.5, z: 9.5, face: -Math.PI / 2, base: '#ee38c0', base2: '#d12aa6', stripe: '#f03ec4', labelColors: ['#ffc2f5', '#c44ce8'], stroke: '#4a0f5e', keeper: true, lantern: '#ff6ee0', inner: '#c82aa0' },
 ]
 
 // Train Strength: two raised terraces west of the plaza with ten priced trees.
@@ -55,7 +55,7 @@ export const TRAIN = {
   aisle: 3.2, // half-width of the grey stair aisle down the middle
   arch: { x: -33.1, halfSpan: 11, height: 8.5 },
 }
-// cost: 'free' | number; cur: 'rebirth' (red/white ball) or 'coin' (gold).
+// cost: 'free' | number of rebirths; cur: 'rebirth' (red/white ball).
 export const STRENGTH_TREES = [
   // front row (tier 1)
   { x: -24, z: -12.5, tier: 1, cost: 'free', cur: 'rebirth', mult: 'x1.5', pad: '#7a3a1c', rim: '#5c5a6a', kind: 'green' },
@@ -64,11 +64,11 @@ export const STRENGTH_TREES = [
   { x: -24, z: 6.5, tier: 1, cost: 5, cur: 'rebirth', mult: 'x4', pad: '#7aa6f0', rim: '#c58bff', kind: 'lilac' },
   { x: -24, z: 12.5, tier: 1, cost: 8, cur: 'rebirth', mult: 'x6', pad: '#22e022', rim: '#0a0a0a', kind: 'palm' },
   // back row (tier 2)
-  { x: -30, z: -12.5, tier: 2, cost: 1399, cur: 'coin', mult: 'x1000', pad: '#2a1210', rim: '#3a2a28', kind: 'lava' },
-  { x: -30, z: -6.5, tier: 2, cost: 185, cur: 'coin', mult: 'x100', pad: '#0a0a0c', rim: '#f0f0f4', kind: 'ghost' },
-  { x: -30, z: 0, tier: 2, cost: 19, cur: 'coin', mult: 'x10', pad: '#33d6ef', rim: '#0a8fa8', kind: 'ice' },
-  { x: -30, z: 6.5, tier: 2, cost: 45, cur: 'coin', mult: 'x25', pad: '#2fd02f', rim: '#8a3ff0', kind: 'violet' },
-  { x: -30, z: 12.5, tier: 2, cost: 559, cur: 'coin', mult: 'x300', pad: '#6a3a22', rim: '#2fa02f', kind: 'jungle' },
+  { x: -30, z: -12.5, tier: 2, cost: 30, cur: 'rebirth', mult: 'x1000', pad: '#2a1210', rim: '#3a2a28', kind: 'lava' },
+  { x: -30, z: -6.5, tier: 2, cost: 20, cur: 'rebirth', mult: 'x100', pad: '#0a0a0c', rim: '#f0f0f4', kind: 'ghost' },
+  { x: -30, z: 0, tier: 2, cost: 14, cur: 'rebirth', mult: 'x10', pad: '#33d6ef', rim: '#0a8fa8', kind: 'ice' },
+  { x: -30, z: 6.5, tier: 2, cost: 17, cur: 'rebirth', mult: 'x25', pad: '#2fd02f', rim: '#8a3ff0', kind: 'violet' },
+  { x: -30, z: 12.5, tier: 2, cost: 25, cur: 'rebirth', mult: 'x300', pad: '#6a3a22', rim: '#2fa02f', kind: 'jungle' },
 ]
 
 // Choppable forest in 20 luck zones (all at ground level, running straight into each other), each nine tree rows deep (spacing 4.4 from z0 = -27).
@@ -144,7 +144,7 @@ export const EGGS = {
   platform: { x: -1.5, z: 21, w: 9, d: 5 },
   list: [
     { x: 0.8, z: 21, kind: 'spotted', price: '25K', icon: 'log', colors: ['#ffb36b', '#e8541c'] },
-    { x: -3.8, z: 21, kind: 'void', price: '11', icon: 'robux', colors: ['#b6ff8a', '#2fcf3a'] },
+    { x: -3.8, z: 21, kind: 'void', price: '250K', icon: 'log', colors: ['#ffb36b', '#e8541c'] },
   ],
 }
 export const CRAFT = { x: 11.5, z: 20, face: Math.PI } // bench faces the plaza

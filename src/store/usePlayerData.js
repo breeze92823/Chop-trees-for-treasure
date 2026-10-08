@@ -33,10 +33,15 @@ function fresh() {
     luckyRolls: 0, // "YOU HAVE n" lucky rolls
     discoveredItems: [], // loot names collected at least once (the Index, systems/treasureIndex.js)
     upgrades: { range: 0, speed: 0, backpack: 0, move: 0, eggluck: 0, petslots: 0 }, // levels bought at the Upgrades stall (data/upgrades.js)
-    artifacts: ['treasurepack'], // crafted artifact ids (data/artifacts.js, systems/artifacts.js)
-    artifact: 'treasurepack', // equipped artifact id
+    artifacts: [], // crafted artifact ids (data/artifacts.js, systems/artifacts.js)
+    artifact: null, // equipped artifact id
     passes: { slots: false, wood2x: false },
     luckUntil: 0, // ms timestamp the Luck! boost runs out
+    questGold: 800, // Gold earned from quests, spent in the Quests window's Rewards tab (data/rewards.js)
+    quests: { progress: {}, done: [], epoch: {} }, // quest progress per data/quests.js id, paid ids, reset epoch per group (systems/quests.js)
+    rewards: [], // owned one-time Rewards gear ids (Pathfinder Wings)
+    potions: { master: 0, luck: 0, cash: 0, strength: 0 }, // potions in stock (systems/rewards.js)
+    boostUntil: { strength: 0, cash: 0, wood: 0 }, // ms timestamps the potion boosts run out (systems/potions.js)
   }
 }
 
@@ -51,7 +56,7 @@ function load() {
   let state = fresh()
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY))
-    if (saved && typeof saved === 'object') state = { ...state, ...saved, passes: { ...state.passes, ...saved.passes }, upgrades: { ...state.upgrades, ...saved.upgrades } }
+    if (saved && typeof saved === 'object') state = { ...state, ...saved, passes: { ...state.passes, ...saved.passes }, upgrades: { ...state.upgrades, ...saved.upgrades }, potions: { ...state.potions, ...saved.potions }, quests: { ...state.quests, ...saved.quests }, boostUntil: { ...state.boostUntil, ...saved.boostUntil } }
   } catch {
     // private window / blocked storage / corrupt save — start fresh
   }

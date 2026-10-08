@@ -2,8 +2,7 @@
 // components/ArtifactsMenu.jsx). One artifact is equipped at a time; owned ids
 // live in usePlayerData `artifacts`, the equipped one in `artifact`.
 //   rarity — keys the row colour + label colours in components/ArtifactsMenu.jsx
-//   gems   — Robux price to craft (null = starter, owned from the start)
-//   stats  — [kind, value] in reading order (two columns, top to bottom, left first); kinds:
+//   gems   — Robux price to craft //   stats  — [kind, value] in reading order (two columns, top to bottom, left first); kinds:
 //     cash / strength / swing / move : percent, added to that multiplier
 //     backpack                       : extra Bag slots
 //     flight                         : label only (Flight Unlocked) — no gameplay hook yet
@@ -11,7 +10,7 @@
 //            (loot item names from data/loot.js, null = empty; repeats count twice), plus `wood`;
 //            ingredients are taken from the Bag. The Robux price buys it outright instead.
 export const ARTIFACTS = [
-  { id: 'treasurepack', name: 'Treasure Pack', rarity: 'Common', gems: null, stats: [['backpack', 1], ['cash', 20], ['strength', 15]] },
+  { id: 'treasurepack', name: 'Treasure Pack', rarity: 'Common', gems: 15, stats: [['backpack', 1], ['cash', 20], ['strength', 15]], recipe: { cells: [null, 'Rock', null, 'Coin', null, 'Mushroom', null, null, null], wood: 100 } },
   { id: 'fortuneamulet', name: 'Fortune Amulet', rarity: 'Uncommon', gems: 115, stats: [['cash', 45], ['strength', 30], ['backpack', 1], ['swing', 6]], recipe: { cells: [null, 'Gem', null, 'Beaded Bracelet', 'Anchor', 'Beaded Bracelet', null, null, null], wood: 2000 } },
   { id: 'explorercompass', name: 'Explorer Compass', rarity: 'Rare', gems: 169, stats: [['move', 10], ['cash', 72], ['strength', 55]], recipe: { cells: [null, 'Sapphire', null, 'Ancient Scroll', 'Pocket Watch', 'Ancient Scroll', null, 'Ruby', null], wood: 6000 } },
   { id: 'dragontotem', name: 'Dragon Totem', rarity: 'Epic', gems: 225, stats: [['strength', 85], ['move', 8], ['swing', 10]], recipe: { cells: [null, 'Jade Idol', null, 'War Drum', 'Magic Lamp', 'War Drum', null, 'Dragon Egg', 'Siren Harp'], wood: 20000 } },

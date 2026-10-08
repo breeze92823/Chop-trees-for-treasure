@@ -10,6 +10,8 @@ import { CashIcon, RebirthIcon } from './hudIcons.jsx'
 // Strength / cash multipliers and level into, progress toward the level it
 // needs, and Rebirth / Skip (Robux). Logic in systems/rebirth.js.
 
+const ROBLUX_CASH = import.meta.env.VITE_ROBLUXCASH === 'true'
+
 const close = () => {
   playButtonClick()
   useGameStore.setState({ rebirthMenu: false })
@@ -82,13 +84,15 @@ export default function RebirthMenu() {
         <Btn className="rebirth-btn" style={{ '--bg': '#2fa83a' }} onClick={click(tryRebirth)}>
           <T size={40} w={5}>Rebirth</T>
         </Btn>
-        <Btn className="rebirth-btn" style={{ '--bg': '#4ab8ff' }} onClick={click(skipRebirth)}>
-          <T size={40} w={5}>Skip</T>
-          <span className="rebirth-skip-price">
-            <Icon name="robux" size={30} />
-            <T size={28} w={4}>{REBIRTH.skipRobux}</T>
-          </span>
-        </Btn>
+        {ROBLUX_CASH && (
+          <Btn className="rebirth-btn" style={{ '--bg': '#4ab8ff' }} onClick={click(skipRebirth)}>
+            <T size={40} w={5}>Skip</T>
+            <span className="rebirth-skip-price">
+              <Icon name="robux" size={30} />
+              <T size={28} w={4}>{REBIRTH.skipRobux}</T>
+            </span>
+          </Btn>
+        )}
       </div>
 
       <div className="rebirth-warn">

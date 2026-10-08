@@ -11,7 +11,7 @@ import { eggLuckBonus } from './upgrades.js'
 import { announceHatch, friendInServer } from './net.js'
 import { formatNumber } from '../utils/format.js'
 
-const CURRENCY_NAME = { wood: 'Wood', robux: 'Robux' }
+const CURRENCY_NAME = { wood: 'Wood', robux: 'Robux', cash: 'Cash', questGold: 'Gold' }
 const AUTO_DELAY_MS = 350
 
 export const isLuckActive = (state = usePlayerData.getState()) => state.luckUntil > Date.now()
@@ -51,7 +51,7 @@ export function tryHatch(kind, count = 1) {
   }
   const price = egg.cost * count
   if (s[egg.currency] < price) {
-    showActionResult(`Not enough ${CURRENCY_NAME[egg.currency]}! Need ${formatNumber(price)}`, false)
+    showActionResult(`Not enough ${CURRENCY_NAME[egg.currency]}! Need ${egg.currency === 'cash' ? '$' : ''}${formatNumber(price)}`, false)
     return false
   }
 
@@ -106,11 +106,11 @@ export function buyBoost(id) {
     showActionResult(`You already own ${boost.label}`, false)
     return
   }
-  if (s.robux < boost.price) {
-    showActionResult(`Not enough Robux! Need ${boost.price}`, false)
+  if (s.cash < boost.price) {
+    showActionResult(`Not enough Cash! Need ${formatNumber(boost.price)}`, false)
     return
   }
-  const update = { robux: s.robux - boost.price }
+  const update = { cash: s.cash - boost.price }
   if (id === 'luck') update.luckUntil = Math.max(Date.now(), s.luckUntil) + LUCK.minutes * 60_000
   else update.passes = { ...s.passes, [id]: true }
   usePlayerData.setState(update)
