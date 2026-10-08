@@ -23,7 +23,7 @@ function fresh() {
     bag: [], // collected loot, { name, rarity, value } — capacity BAG_MAX (data/loot.js)
     level: 1,
     xp: 0, // strength gained toward the next level
-    xpNeeded: 10, // data/levels.js strengthForNextLevel(level)
+    xpNeeded: 25, // data/levels.js strengthForNextLevel(level)
     rebirths: 0, // systems/rebirth.js
     cash: 0, // $ from selling loot (systems/sell.js)
     choppers: ['pinechip'], // owned chopper ids (data/choppers.js, systems/choppers.js)
