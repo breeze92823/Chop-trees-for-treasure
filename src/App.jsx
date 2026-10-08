@@ -18,6 +18,7 @@ import LoadingScreen from './components/LoadingScreen.jsx'
 import Hud from './components/Hud.jsx'
 import GameHud from './components/GameHud.jsx'
 import InteractPrompt from './components/InteractPrompt.jsx'
+import AdaptiveResolution from './components/AdaptiveResolution.jsx'
 import MobileShadowCull from './components/MobileShadowCull.jsx'
 import TouchControls from './components/TouchControls.jsx'
 
@@ -52,6 +53,7 @@ export default function App() {
         <Lighting shadowMapSize={preset.shadowMap} />
 
         <GameLoop />
+        <AdaptiveResolution max={Math.min(window.devicePixelRatio || 1, preset.dpr[1])} />
         <Suspense fallback={null}>
           <World />
           {IS_MOBILE && preset.shadows && <MobileShadowCull />}
