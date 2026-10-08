@@ -118,14 +118,54 @@ function onContextMenu(e) {
 
 function onBlur() {
   held.clear()
+  touches.clear()
+  touchInteractHeld = false
   orbiting = false
   inputState.jump = false
   inputState.interact = false
   recomputeMove()
 }
 
+// On-screen Interact button: counts as the E key being held.
+let touchInteractHeld = false
+export function setTouchInteract(down) {
+  touchInteractHeld = down
+}
+
 export function isKeyDown(code) {
+  if (code === INTERACT_KEY && touchInteractHeld) return true
   return held.has(code)
+}
+
+// Touch camera: one finger dragging the 3D view orbits, two fingers pinch to zoom.
+// Presses on HUD/controls never reach here (they stop propagation or aren't a canvas).
+const PINCH_SENS = 2.2
+const touches = new Map() // pointerId -> { x, y }
+function pinchDist() {
+  const [a, b] = [...touches.values()]
+  return Math.hypot(a.x - b.x, a.y - b.y)
+}
+function onTouchPointerDown(e) {
+  if (e.pointerType !== 'touch' || inputLocked || e.target?.tagName !== 'CANVAS') return
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY })
+}
+function onTouchPointerMove(e) {
+  const t = touches.get(e.pointerId)
+  if (!t || inputLocked) return
+  if (touches.size === 1) {
+    addTouchLook(e.clientX - t.x, e.clientY - t.y)
+  } else if (touches.size === 2) {
+    const before = pinchDist()
+    t.x = e.clientX
+    t.y = e.clientY
+    addTouchZoom((before - pinchDist()) * PINCH_SENS)
+    return
+  }
+  t.x = e.clientX
+  t.y = e.clientY
+}
+function onTouchPointerUp(e) {
+  touches.delete(e.pointerId)
 }
 
 export function install() {
@@ -136,6 +176,10 @@ export function install() {
   window.addEventListener('pointerdown', onPointerDown)
   window.addEventListener('pointerup', onPointerUp)
   window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerdown', onTouchPointerDown)
+  window.addEventListener('pointermove', onTouchPointerMove)
+  window.addEventListener('pointerup', onTouchPointerUp)
+  window.addEventListener('pointercancel', onTouchPointerUp)
   window.addEventListener('wheel', onWheel, { passive: true })
   window.addEventListener('contextmenu', onContextMenu)
   window.addEventListener('blur', onBlur)
@@ -160,6 +204,10 @@ export function uninstall() {
   window.removeEventListener('pointerdown', onPointerDown)
   window.removeEventListener('pointerup', onPointerUp)
   window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerdown', onTouchPointerDown)
+  window.removeEventListener('pointermove', onTouchPointerMove)
+  window.removeEventListener('pointerup', onTouchPointerUp)
+  window.removeEventListener('pointercancel', onTouchPointerUp)
   window.removeEventListener('wheel', onWheel)
   window.removeEventListener('contextmenu', onContextMenu)
   window.removeEventListener('blur', onBlur)

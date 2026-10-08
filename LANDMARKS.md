@@ -159,6 +159,7 @@ Component: [GameHud.jsx](src/components/GameHud.jsx). Styles: [gameHud.css](src/
 
 | Name | Screen position | Function / class | Shows |
 |---|---|---|---|
+| **Touch Controls** | bottom left stick; bottom right Chop / Jump / Interact (E, only near a prompt) | [TouchControls.jsx](src/components/TouchControls.jsx), [touch.css](src/styles/touch.css) | Only in touch mode (`input.js`). Drag the 3D view to orbit, pinch to zoom; portrait shows a rotate hint; Level Bar / Auto Collects / Stats are enlarged and the Stats moved to the top right. |
 | **Level Bar** | top centre | `LevelBar` / `.level` | "LEVEL 3", 31.94/80, cyan fill |
 | **Strength Packs** | under the Level Bar | `.pack` | +8.5K (orange), +800K (purple), +80M (red) |
 | **Strength Counter** | under the packs | `.strength` | 💪 116.94 Strength |

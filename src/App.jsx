@@ -17,6 +17,7 @@ import LoadingScreen from './components/LoadingScreen.jsx'
 import Hud from './components/Hud.jsx'
 import GameHud from './components/GameHud.jsx'
 import InteractPrompt from './components/InteractPrompt.jsx'
+import TouchControls from './components/TouchControls.jsx'
 
 // Rendered last inside the Suspense boundary, so it only mounts once every
 // suspending resource in the scene has resolved — the right moment to tell the
@@ -69,6 +70,7 @@ export default function App() {
       <GameHud />
       <Hud />
       <InteractPrompt />
+      <TouchControls />
       <LoadingScreen sceneReady={sceneReady} />
     </>
   )
