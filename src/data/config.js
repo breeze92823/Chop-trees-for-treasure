@@ -9,6 +9,12 @@ import { FOREST_END_Z } from '../world/layout.js'
 export const GAME_SLUG = 'chop-trees-for-treasure' // slug registered on bloxity.io
 export const GAME_TITLE = 'Chop Trees for Treasure'
 
+// Colyseus server (systems/net.js). Two Legion channels (`dev` -> dev, `main` -> prod); empty = none.
+// When one is configured the game is multiplayer and player progress lives on the server, not in localStorage.
+const SERVER_URL_DEV = import.meta.env.VITE_SERVER_URL_DEV || 'ws://localhost:2567'
+const SERVER_URL_MAIN = import.meta.env.VITE_SERVER_URL_MAIN || ''
+export const SERVER_URL = import.meta.env.MODE === 'production' ? SERVER_URL_MAIN : SERVER_URL_DEV
+
 // --- World (metres: +X east, +Z south, +Y up) -------------------------------
 export const GROUND_Y = 0
 export const GROUT = 0.05 // tile material grout width (materials/tile.js)

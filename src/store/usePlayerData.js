@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import { STARTING_BALANCE } from '../data/eggs.js'
+import { SERVER_URL } from '../data/config.js'
 
-// The local player's progress: balances, owned pets, boosts. Saved to this
-// browser's localStorage on every change, and — for a signed-in Bloxity
-// account — pushed to the server (systems/net.js `saveProgress`, which stores
+// The local player's progress: balances, owned pets, boosts. In multiplayer
+// (a server URL is configured) it is never read from or written to the browser:
+// it starts fresh and is hydrated from the server. Only a server-less build
+// saves to localStorage. Progress is pushed to the server (systems/net.js `saveProgress`, which stores
 // every key of fresh() in Mongo; the server's src/sanitize.ts validates them).
 //   pets[]   — { id, egg, name } — egg + name key into data/eggs.js EGG_SHOP
 //   equipped — pet ids, at most petSlots() (systems/pets.js)
@@ -54,19 +56,24 @@ const hasEnvCash = import.meta.env.VITE_CASH !== undefined && import.meta.env.VI
 
 function load() {
   let state = fresh()
+  if (SERVER_URL) return withEnvCash(state) // multiplayer: systems/net.js hydrates from the backend
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY))
     if (saved && typeof saved === 'object') state = { ...state, ...saved, passes: { ...state.passes, ...saved.passes }, upgrades: { ...state.upgrades, ...saved.upgrades }, potions: { ...state.potions, ...saved.potions }, quests: { ...state.quests, ...saved.quests }, boostUntil: { ...state.boostUntil, ...saved.boostUntil } }
   } catch {
     // private window / blocked storage / corrupt save — start fresh
   }
+  return withEnvCash(state)
+}
+
+function withEnvCash(state) {
   if (hasEnvCash) state.cash = ENV_CASH
   return state
 }
 
 export const usePlayerData = create(load)
 
-usePlayerData.subscribe((state) => {
+if (!SERVER_URL) usePlayerData.subscribe((state) => {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state))
   } catch {
