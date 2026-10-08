@@ -59,6 +59,28 @@ function Coal() {
   )
 }
 
+function Rock() {
+  const stone = plastic('#8f8d88', { flatShading: true })
+  const dark = plastic('#76746f', { flatShading: true })
+  const light = plastic('#aaa8a1', { flatShading: true })
+  return (
+    <group position={[0, 0.34, 0]} rotation-y={0.5}>
+      <mesh scale={[1.15, 0.7, 0.9]} material={stone}>
+        <dodecahedronGeometry args={[0.5, 0]} />
+      </mesh>
+      <mesh position={[-0.42, -0.14, 0.22]} scale={[1, 0.75, 1]} material={dark}>
+        <dodecahedronGeometry args={[0.24, 0]} />
+      </mesh>
+      <mesh position={[0.4, -0.16, 0.2]} material={dark}>
+        <dodecahedronGeometry args={[0.18, 0]} />
+      </mesh>
+      <mesh position={[0.05, 0.28, -0.12]} rotation={[0.4, 0.7, 0]} material={light}>
+        <dodecahedronGeometry args={[0.17, 0]} />
+      </mesh>
+    </group>
+  )
+}
+
 function Bone() {
   const bone = plastic('#f4f1e4')
   const shade = plastic('#d9d4bf')
@@ -2584,7 +2606,7 @@ export function GenericItem() {
 }
 
 export const MODELS = {
-  Coal, Bone, Skull, Mushroom, Anchor, Gem, 'Beaded Bracelet': Bracelet,
+  Rock, Coal, Bone, Skull, Mushroom, Anchor, Gem, 'Beaded Bracelet': Bracelet,
   Coin, 'Brass Bell': BrassBell, Binoculars, 'Iron Bar': IronBar, 'Pirate Hat': PirateHat,
   Anvil, Dagger, TNT, Bomb, Helmet, Quartz, Emerald, Amethyst, 'Porcelain Vase': PorcelainVase,
   // Common / Uncommon
