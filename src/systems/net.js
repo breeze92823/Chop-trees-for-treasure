@@ -11,7 +11,7 @@
 //
 // Progress sync: a signed-in account's store/usePlayerData.js is hydrated from
 // the server's `progress` reply on join (a new account answers `noProgress`
-// and its local state is pushed instead), then saved back, debounced, as
+// and its fresh starting state is pushed instead), then saved back, debounced, as
 // `saveProgress`. Guests are never saved server-side. The server also
 // broadcasts the `leaderboard` boards (store/useLeaderboardStore.js).
 // Offline (server unreachable) the game simply runs single-player and keeps
@@ -37,13 +37,7 @@ import { usePlayerData, SAVED_KEYS } from '../store/usePlayerData.js'
 import { equippedPetIds } from './pets.js'
 import { pushAnnouncement } from './announce.js'
 import { playPowerGainPop } from './sfx.js'
-import { GAME_SLUG, NET } from '../data/config.js'
-
-// Two Legion channels (`dev` branch -> dev, `main` -> prod), each with its own
-// hostname; Vite's MODE picks one at build time. Empty = no server configured.
-const SERVER_URL_DEV = import.meta.env.VITE_SERVER_URL_DEV || 'ws://localhost:2567'
-const SERVER_URL_MAIN = import.meta.env.VITE_SERVER_URL_MAIN || ''
-const SERVER_URL = import.meta.env.MODE === 'production' ? SERVER_URL_MAIN : SERVER_URL_DEV
+import { GAME_SLUG, NET, SERVER_URL } from '../data/config.js'
 
 const AVATAR_MAX_LEN = 3000 // keep in step with the server's constants.ts
 const ROSTER_MS = 200
@@ -51,7 +45,7 @@ const JOIN_TIMEOUT_MS = 8000 // first attempt; after this the game plays offline
 const RETRY_MS = [2000, 4000, 8000, 15000]
 const SAVE_DEBOUNCE_MS = 2000
 const SAVE_MAX_BYTES = 120000 // the server drops a message over its 128 KB cap (constants.ts MAX_PAYLOAD_BYTES)
-const HYDRATE_WAIT_MS = 6000 // no progress/noProgress reply by then: go online with the local save, unsynced
+const HYDRATE_WAIT_MS = 6000 // no progress/noProgress reply by then: go online with the starting state, unsynced
 
 let room = null
 let started = false
@@ -270,13 +264,15 @@ async function connect() {
       playTimeBase = Number(doc.playTime) || 0
       playTimeAt = Date.now()
       hydrated = true
+      useGameStore.setState({ progressLoaded: true })
       lastSaved = reconnect ? '' : JSON.stringify(pickSaved(usePlayerData.getState()))
       if (reconnect) saveNow()
       goOnline()
     })
     r.onMessage('noProgress', () => {
-      // A new account (or a guest, or a server without a database): keep the local state and store it.
+      // A new account (or a guest, or a server without a database): keep the starting state and store it.
       hydrated = true
+      useGameStore.setState({ progressLoaded: true })
       lastSaved = ''
       saveNow()
       goOnline()
@@ -350,6 +346,7 @@ export function startNet() {
     joinedAs = id
     saveNow() // the final save under the old identity
     hydrated = false
+    useGameStore.setState({ progressLoaded: false })
     room.send('identify', { userId: id, username: getDisplayName() })
     room.send('setAvatar', { avatar: avatarJson() })
   })

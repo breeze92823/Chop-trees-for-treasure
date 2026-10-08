@@ -1396,3 +1396,27 @@
 .offline-row.is-strength { top: calc(274 * var(--s)); }
 .offline-claim { position: absolute; left: calc(200 * var(--s)); top: calc(404 * var(--s)); width: calc(300 * var(--s)); height: calc(86 * var(--s)); border-radius: calc(4 * var(--s)); }
 .offline-claim:disabled { opacity: 0.7; cursor: wait; }
+
+/* --- Tutorial banner: sits under the Strength readout (and the forest's Home button) --- */
+.tutorial {
+  position: absolute;
+  top: calc(150 * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: calc(520 * var(--s));
+  padding: calc(14 * var(--s)) calc(30 * var(--s)) calc(8 * var(--s));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #1d2442 var(--studs);
+  background-size: calc(24 * var(--s)) calc(24 * var(--s));
+  border: calc(4 * var(--s)) solid #15151a;
+  border-radius: calc(8 * var(--s));
+  box-shadow: 0 calc(4 * var(--s)) 0 rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  animation: tutorial-pop 0.35s ease-out;
+}
+@keyframes tutorial-pop {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.7); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); }
+}

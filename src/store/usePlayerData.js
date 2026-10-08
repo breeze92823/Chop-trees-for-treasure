@@ -1,9 +1,12 @@
 import { create } from 'zustand'
 import { STARTING_BALANCE } from '../data/eggs.js'
+import { SERVER_URL } from '../data/config.js'
+import { TUTORIAL_DONE } from '../data/tutorial.js'
 
-// The local player's progress: balances, owned pets, boosts. Saved to this
-// browser's localStorage on every change, and — for a signed-in Bloxity
-// account — pushed to the server (systems/net.js `saveProgress`, which stores
+// The local player's progress: balances, owned pets, boosts. In multiplayer
+// (a server URL is configured) it is never read from or written to the browser:
+// it starts fresh and is hydrated from the server. Only a server-less build
+// saves to localStorage. Progress is pushed to the server (systems/net.js `saveProgress`, which stores
 // every key of fresh() in Mongo; the server's src/sanitize.ts validates them).
 //   pets[]   — { id, egg, name } — egg + name key into data/eggs.js EGG_SHOP
 //   equipped — pet ids, at most petSlots() (systems/pets.js)
@@ -21,7 +24,7 @@ function fresh() {
     bag: [], // collected loot, { name, rarity, value } — capacity BAG_MAX (data/loot.js)
     level: 1,
     xp: 0, // strength gained toward the next level
-    xpNeeded: 10, // data/levels.js strengthForNextLevel(level)
+    xpNeeded: 25, // data/levels.js strengthForNextLevel(level)
     rebirths: 0, // systems/rebirth.js
     cash: 0, // $ from selling loot (systems/sell.js)
     choppers: ['pinechip'], // owned chopper ids (data/choppers.js, systems/choppers.js)
@@ -42,6 +45,7 @@ function fresh() {
     rewards: [], // owned one-time Rewards gear ids (Pathfinder Wings)
     potions: { master: 0, luck: 0, cash: 0, strength: 0 }, // potions in stock (systems/rewards.js)
     boostUntil: { strength: 0, cash: 0, wood: 0 }, // ms timestamps the potion boosts run out (systems/potions.js)
+    tutorialStep: 0, // onboarding progress, 0..TUTORIAL_DONE (data/tutorial.js, components/Tutorial.jsx); the server only ever raises it
   }
 }
 
@@ -54,19 +58,25 @@ const hasEnvCash = import.meta.env.VITE_CASH !== undefined && import.meta.env.VI
 
 function load() {
   let state = fresh()
+  if (SERVER_URL) return withEnvCash(state) // multiplayer: systems/net.js hydrates from the backend
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY))
-    if (saved && typeof saved === 'object') state = { ...state, ...saved, passes: { ...state.passes, ...saved.passes }, upgrades: { ...state.upgrades, ...saved.upgrades }, potions: { ...state.potions, ...saved.potions }, quests: { ...state.quests, ...saved.quests }, boostUntil: { ...state.boostUntil, ...saved.boostUntil } }
+    if (saved && typeof saved === 'object') state = { ...state, tutorialStep: TUTORIAL_DONE, ...saved, // a save from before the tutorial existed counts as finished
+       passes: { ...state.passes, ...saved.passes }, upgrades: { ...state.upgrades, ...saved.upgrades }, potions: { ...state.potions, ...saved.potions }, quests: { ...state.quests, ...saved.quests }, boostUntil: { ...state.boostUntil, ...saved.boostUntil } }
   } catch {
     // private window / blocked storage / corrupt save — start fresh
   }
+  return withEnvCash(state)
+}
+
+function withEnvCash(state) {
   if (hasEnvCash) state.cash = ENV_CASH
   return state
 }
 
 export const usePlayerData = create(load)
 
-usePlayerData.subscribe((state) => {
+if (!SERVER_URL) usePlayerData.subscribe((state) => {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state))
   } catch {
